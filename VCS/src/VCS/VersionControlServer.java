@@ -6,6 +6,7 @@ package VCS;
 
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
 import java.util.Dictionary;
@@ -15,11 +16,12 @@ import java.util.Dictionary;
  * @author Guille
  */
 public class VersionControlServer extends RemoteObject implements VersionControl{
+  
   private MulticastSocket elections;
   private MulticastSocket messages;
   private int coordId;
   private Dictionary<Integer, InetAddress> dns;
-  private InetAddress multicastAddres = 225.0.0.5;
+  private InetAddress multicastAddress;
 
   /**
    * Constructor to build a new version control server
@@ -30,6 +32,12 @@ public class VersionControlServer extends RemoteObject implements VersionControl
   public VersionControlServer(MulticastSocket elections, MulticastSocket messages) {
     this.elections = elections;
     this.messages = messages;
+    
+    try {
+      this.multicastAddress = InetAddress.getByName("225.0.0.5");
+    } catch( UnknownHostException e ) {
+      System.out.println( e );
+    }
   }
     
   @Override
