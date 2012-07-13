@@ -7,7 +7,7 @@ package VCS;
 import java.net.MulticastSocket;
 import java.lang.Thread;
 
-public class serverComunication extends Thread{
+public class ServerComunication extends Thread{
   
   private MulticastSocket listenMessages;
   

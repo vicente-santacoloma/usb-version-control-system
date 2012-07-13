@@ -8,9 +8,9 @@ package VCS;
  *
  * @author ninina31
  */
-public class client {
+public class Client {
   
-  private versionControlServer controlServer;
+  private VersionControlServer controlServer;
   
   /*
    Operaciones

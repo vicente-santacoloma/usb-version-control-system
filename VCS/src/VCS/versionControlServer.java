@@ -7,7 +7,7 @@ package VCS;
 import java.rmi.server.RemoteObject;
 import java.net.MulticastSocket;
 
-public class versionControlServer extends RemoteObject{
+public class VersionControlServer extends RemoteObject{
   
   private MulticastSocket elections;
   private MulticastSocket messages;

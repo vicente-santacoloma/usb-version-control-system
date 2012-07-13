@@ -10,6 +10,6 @@ package VCS;
  */
 import java.io.Serializable;
 
-public class fileDescription implements Serializable{
+public class FileDescription implements Serializable{
   
 }

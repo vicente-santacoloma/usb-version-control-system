@@ -9,10 +9,10 @@ import java.io.Serializable;
  *
  * @author ninina31
  */
-public class message implements Serializable{
+public class Message implements Serializable{
   
   private int id;
-  private fileDescription file;
+  private FileDescription file;
   
   
 }
