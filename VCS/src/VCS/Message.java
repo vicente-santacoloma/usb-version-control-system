@@ -12,30 +12,49 @@ import java.io.Serializable;
  */
 public class Message implements Serializable{
   private EnumMessageType type;
+  private Byte[] configFile;
   private FileDescription[] commitElements;
   private int id;
   private FileDescription sentFile;
 
   /**
+    * Constructor for an election response message 
+    */
+  public Message() {
+    this.type = EnumMessageType.ELECTION_R;
+  }
+
+
+  /**
    * Constructor for a message to send a file update
-   * @param type
    * @param id
    * @param sentFile 
    */
-  public Message(EnumMessageType type, int id, FileDescription sentFile) {
-    this.type = type;
+  public Message(int id, FileDescription sentFile) {
     this.id = id;
     this.sentFile = sentFile;
+    this.type = EnumMessageType.FILE_S;
   }
 
   /**
    * Constructor for a message containing a commit
-   * @param type
+   * @param configFile
    * @param commitElements 
    */
-  public Message(EnumMessageType type, FileDescription[] commitElements) {
-    this.type = type;
+  public Message(Byte[] configFile, FileDescription[] commitElements) {
     this.commitElements = commitElements;
+    this.configFile = configFile;
+    this.type = EnumMessageType.COMMIT;
+  }
+
+  /**
+   * Constructor for an election message, either election start or coordinator
+   * @param id 
+   * @param type 
+   */
+  public Message(int id, EnumMessageType type) {
+    this.id = id;
+    this.type = type;
   }
 
   //Getters
@@ -54,4 +73,9 @@ public class Message implements Serializable{
   public EnumMessageType getType() {
     return type;
   }
+
+  public Byte[] getConfigFile() {
+    return configFile;
+  }
+  
 }

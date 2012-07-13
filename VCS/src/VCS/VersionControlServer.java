@@ -4,9 +4,11 @@
  */
 package VCS;
 
+import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
+import java.util.Dictionary;
 
 /**
  *
@@ -15,6 +17,8 @@ import java.rmi.server.RemoteObject;
 public class VersionControlServer extends RemoteObject implements VersionControl{
   private MulticastSocket elections;
   private MulticastSocket messages;
+  private int coordId;
+  private Dictionary<Integer, InetAddress> dns;
 
   /**
    * Constructor to build a new version control server
@@ -26,7 +30,6 @@ public class VersionControlServer extends RemoteObject implements VersionControl
     this.elections = elections;
     this.messages = messages;
   }
-    
     
   @Override
   public String commit(FileDescription[] files)
@@ -56,8 +59,26 @@ public class VersionControlServer extends RemoteObject implements VersionControl
     return null;
   }
 
+
+  //Getters
+  public int getCoordId() {
+    return coordId;
+  }
+
+
+  public Dictionary<Integer, InetAddress> getDns() {
+    return dns;
+  }
+
+  public MulticastSocket getElections() {
+    return elections;
+  }
+
+  public MulticastSocket getMessages() {
+    return messages;
+  }
   
-  public static void main(String[] args) throws InterruptedException{
+   public static void main(String[] args) throws InterruptedException{
     
     /*
      llamo a eleccion y hago join con este hilo
@@ -79,8 +100,7 @@ public class VersionControlServer extends RemoteObject implements VersionControl
     /* coordinador se inscribe en rmi y resuelve peticiones del cliente */
     
     
-    
-    
 
   }
+
 }
