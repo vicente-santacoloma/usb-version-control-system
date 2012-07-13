@@ -6,8 +6,20 @@ package VCS;
 
 /**
  *
- * @author Alberto
+ * @author Guille
  */
 public class Client {
+    private VersionControlServer server;
     
+    public void clientCommit(){
+     
+    }
+    
+    public void clientCheckout(){
+        
+    }
+    
+    public void clientUpdate(){
+        
+    }
 }

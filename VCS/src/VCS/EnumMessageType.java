@@ -6,7 +6,7 @@ package VCS;
 
 /**
  *
- * @author Alberto
+ * @author Guille
  */
 public enum EnumMessageType {
     COMMIT, ENTRY, FILE_R, FILE_S
