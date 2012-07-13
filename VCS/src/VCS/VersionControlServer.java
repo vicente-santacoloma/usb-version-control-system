@@ -56,7 +56,31 @@ public class VersionControlServer extends RemoteObject implements VersionControl
     return null;
   }
 
-  public static void main(String[] args){
+  
+  public static void main(String[] args) throws InterruptedException{
+    
+    /*
+     llamo a eleccion y hago join con este hilo
+     si soy electo, hago cosas de coordinador hasta q me muera
+     * 
+     * hilos: servercommunitation
+     * serverelection
+     * falta uno
+     */
+    
+    Thread election = new ServerElection();
+    Thread listenMessages = new ServerCommunication();
+    
+    election.start();
+    listenMessages.start();
+    
+    election.join();
+    
+    /* coordinador se inscribe en rmi y resuelve peticiones del cliente */
+    
+    
+    
+    
 
   }
 }
