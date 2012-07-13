@@ -6,6 +6,7 @@ package VCS;
 
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
 import java.util.Dictionary;
@@ -15,10 +16,12 @@ import java.util.Dictionary;
  * @author Guille
  */
 public class VersionControlServer extends RemoteObject implements VersionControl{
+  
   private MulticastSocket elections;
   private MulticastSocket messages;
   private int coordId;
   private Dictionary<Integer, InetAddress> dns;
+  private InetAddress multicastAddress;
 
   /**
    * Constructor to build a new version control server
@@ -29,11 +32,13 @@ public class VersionControlServer extends RemoteObject implements VersionControl
   public VersionControlServer(MulticastSocket elections, MulticastSocket messages) {
     this.elections = elections;
     this.messages = messages;
+    
+    try {
+      this.multicastAddress = InetAddress.getByName("225.0.0.5");
+    } catch( UnknownHostException e ) {
+      System.out.println( e );
+    }
   }
-  
-  public static void main(String[] args){
-
-  }  
     
   @Override
   public String commit(FileDescription[] files)
@@ -63,10 +68,12 @@ public class VersionControlServer extends RemoteObject implements VersionControl
     return null;
   }
 
+
   //Getters
   public int getCoordId() {
     return coordId;
   }
+
 
   public Dictionary<Integer, InetAddress> getDns() {
     return dns;
@@ -78,6 +85,37 @@ public class VersionControlServer extends RemoteObject implements VersionControl
 
   public MulticastSocket getMessages() {
     return messages;
+  }
+  
+   public static void main(String[] args) throws InterruptedException{
+     
+     //parametro de entrada ip rmiregistry
+     
+     
+    
+    /*
+     llamo a eleccion y hago join con este hilo
+     si soy electo, hago cosas de coordinador hasta q me muera
+     * 
+     * hilos: servercommunitation
+     * serverelection
+     * falta uno
+     */
+     
+    /*updateclient = actualizar los archivos*/
+    
+    Thread election = new ServerElection();
+    Thread listenMessages = new ServerCommunication();
+    
+    election.start();
+    listenMessages.start();
+    
+    election.join();
+    
+    /* coordinador se inscribe en rmi y resuelve peticiones del cliente */
+    
+    
+
   }
 
 }

@@ -30,6 +30,10 @@ public class ServerElection extends Thread{
     this.father = father;
   }
 
+  ServerElection() {
+    throw new UnsupportedOperationException("Not yet implemented");
+  }
+
   @Override
   public void run(){
     //Buffers for reading and writing on packets
