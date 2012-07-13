@@ -4,6 +4,7 @@
  */
 package VCS;
 
+import java.io.*;
 import java.net.MulticastSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -31,10 +32,21 @@ public class ServerElection extends Thread{
 
   @Override
   public void run(){
+    //Buffers for reading and writing on packets
+    byte[] bRecv = new byte[65535];
+    byte[] bSend;
+    ByteArrayInputStream bin;
+    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+    ObjectInputStream ois;
+    ObjectOutputStream oos;
     try{
-      elections.setSoTimeout(1000);
+      elections = new MulticastSocket(810602);
+      elections.joinGroup(father.getMulticastAddress());
+      
     }catch(SocketException se){
       System.out.println(se.getMessage());
+    }catch(IOException ioe){
+      System.out.println(ioe.getMessage());
     }
   }
 }
