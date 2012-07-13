@@ -19,6 +19,7 @@ public class VersionControlServer extends RemoteObject implements VersionControl
   private MulticastSocket messages;
   private int coordId;
   private Dictionary<Integer, InetAddress> dns;
+  private InetAddress multicastAddres = 225.0.0.5;
 
   /**
    * Constructor to build a new version control server
@@ -79,6 +80,10 @@ public class VersionControlServer extends RemoteObject implements VersionControl
   }
   
    public static void main(String[] args) throws InterruptedException{
+     
+     //parametro de entrada ip rmiregistry
+     
+     
     
     /*
      llamo a eleccion y hago join con este hilo
@@ -88,6 +93,8 @@ public class VersionControlServer extends RemoteObject implements VersionControl
      * serverelection
      * falta uno
      */
+     
+    /*updateclient = actualizar los archivos*/
     
     Thread election = new ServerElection();
     Thread listenMessages = new ServerCommunication();
