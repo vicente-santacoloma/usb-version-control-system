@@ -1,15 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package VCS;
-import java.net.*;
-
 /**
  *
  * @author ninina31
  */
-public class versionControlServer{
+package VCS;
+
+import java.rmi.server.RemoteObject;
+import java.net.MulticastSocket;
+
+public class versionControlServer extends RemoteObject{
   
   private MulticastSocket elections;
   private MulticastSocket messages;

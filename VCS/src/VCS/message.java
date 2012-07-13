@@ -4,11 +4,12 @@
  */
 package VCS;
 
+import java.io.Serializable;
 /**
  *
  * @author ninina31
  */
-public class message {
+public class message implements Serializable{
   
   private int id;
   private fileDescription file;

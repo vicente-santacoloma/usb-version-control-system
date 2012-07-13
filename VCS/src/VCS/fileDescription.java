@@ -8,6 +8,8 @@ package VCS;
  *
  * @author ninina31
  */
-public class fileDescription {
+import java.io.Serializable;
+
+public class fileDescription implements Serializable{
   
 }

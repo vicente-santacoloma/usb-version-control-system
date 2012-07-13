@@ -1,15 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package VCS;
-import java.net.*;
-
 /**
  *
  * @author ninina31
  */
-public class serverComunication {
+
+package VCS;
+import java.net.MulticastSocket;
+import java.lang.Thread;
+
+public class serverComunication extends Thread{
   
   private MulticastSocket listenMessages;
   
