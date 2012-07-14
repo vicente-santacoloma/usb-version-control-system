@@ -98,9 +98,9 @@ public class VersionControlServer extends UnicastRemoteObject implements Version
      
     InetAddress group = InetAddress.getByName("225.0.0.5");
      
-    MulticastSocket s = new MulticastSocket(810602);
+    MulticastSocket s = new MulticastSocket(10602);
     
-    MulticastSocket p = new MulticastSocket(741895);
+    MulticastSocket p = new MulticastSocket(41895);
      
     s.joinGroup(group);
     p.joinGroup(group);
@@ -137,7 +137,7 @@ public class VersionControlServer extends UnicastRemoteObject implements Version
     ServerSocket acceptS = null;
     
     try {
-      acceptS = new ServerSocket(741651);
+      acceptS = new ServerSocket(41651);
     } catch (IOException e) {
       System.err.println("Could not listen on port.");
       System.exit(1);
