@@ -9,5 +9,5 @@ package VCS;
  * @author Guille
  */
 public enum EnumMessageType {
-    COMMIT, ENTRY, FILE_R, FILE_S, ELECTION_S, ELECTION_R, COORDINATOR, IS_ALIVE
+    COMMIT, FILE_R, FILE_S, ELECTION_S, COORDINATOR
 }
