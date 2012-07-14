@@ -4,18 +4,23 @@
  */
 package VCS;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
+import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.rmi.server.RemoteObject;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Dictionary;
 
 /**
  *
  * @author Guille
  */
-public class VersionControlServer extends RemoteObject implements VersionControl{
+public class VersionControlServer extends UnicastRemoteObject implements VersionControl{
   
   private MulticastSocket elections;
   private MulticastSocket messages;
@@ -29,7 +34,7 @@ public class VersionControlServer extends RemoteObject implements VersionControl
    * @param elections
    * @param messages 
    */ 
-  public VersionControlServer(MulticastSocket elections, MulticastSocket messages) {
+  public VersionControlServer(MulticastSocket elections, MulticastSocket messages) throws RemoteException{
     this.elections = elections;
     this.messages = messages;
     
@@ -87,11 +92,20 @@ public class VersionControlServer extends RemoteObject implements VersionControl
     return messages;
   }
   
-   public static void main(String[] args) throws InterruptedException{
+   public static void main(String[] args) throws InterruptedException, RemoteException, IOException{
      
-     //parametro de entrada ip rmiregistry
+    //parametro de entrada ip rmiregistry
      
+    InetAddress group = InetAddress.getByName("225.0.0.5");
      
+    MulticastSocket s = new MulticastSocket(810602);
+    
+    MulticastSocket p = new MulticastSocket(741895);
+     
+    s.joinGroup(group);
+    p.joinGroup(group);
+     
+    VersionControlServer v = new VersionControlServer(s,p);
     
     /*
      llamo a eleccion y hago join con este hilo
@@ -104,7 +118,7 @@ public class VersionControlServer extends RemoteObject implements VersionControl
      
     /*updateclient = actualizar los archivos*/
     
-    Thread election = new ServerElection();
+    Thread election = new ServerElection(s,v);
     Thread listenMessages = new ServerCommunication();
     
     election.start();
@@ -114,8 +128,34 @@ public class VersionControlServer extends RemoteObject implements VersionControl
     
     /* coordinador se inscribe en rmi y resuelve peticiones del cliente */
     
+    Naming.rebind("VCS", v);
+   
+    // escuchar por un socket particular
     
-
+    Socket clientSocket = null;
+    
+    ServerSocket acceptS = null;
+    
+    try {
+      acceptS = new ServerSocket(741651);
+    } catch (IOException e) {
+      System.err.println("Could not listen on port.");
+      System.exit(1);
+    }
+    
+    PrintWriter out; 
+    String inputLine = "coordinator alive";
+    
+    while(true){
+    
+      clientSocket = acceptS.accept();
+      
+      out = new PrintWriter(clientSocket.getOutputStream(), true);
+      
+      out.println(inputLine);
+      
+    }
+    
   }
 
 }

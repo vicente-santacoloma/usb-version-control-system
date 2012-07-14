@@ -9,6 +9,7 @@ package VCS;
  * @author Guille
  */
 public class Client {
+  
     private VersionControlServer server;
     
     public void clientCommit(){
@@ -22,4 +23,13 @@ public class Client {
     public void clientUpdate(){
         
     }
+    
+    public static void main(String args[]){
+    
+      
+    
+    
+    }
+    
+    
 }
