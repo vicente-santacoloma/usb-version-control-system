@@ -4,6 +4,7 @@
  */
 package VCS;
 
+import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
 
@@ -36,10 +37,17 @@ public class VersionControlImpl extends RemoteObject implements VersionControl{
   }
 
   @Override
-  public FileDescription[] updateClient(int id)
+  public FileDescription[] updateServer(int id)
     throws RemoteException{
 
     return null;
+  }
+
+  @Override
+  public boolean requestEntry(int id, InetAddress ip) 
+    throws RemoteException {
+    
+    return false;
   }
   
 }

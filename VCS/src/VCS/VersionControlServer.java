@@ -12,8 +12,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.server.RemoteObject;
 import java.util.HashMap;
 /**
  *
@@ -75,9 +75,31 @@ public class VersionControlServer{
     this.coordId = coordId;
   }
 
-   public static void main(String[] args) throws InterruptedException, RemoteException, IOException{
+   public static void main(String[] args) throws InterruptedException, RemoteException, IOException, NotBoundException{
      
     //parametro de entrada ip rmiregistry
+    // recibir por linea de comando mi ip y mi id
+     
+    String host = null;
+    int port =0;
+     
+    if (!((0 < args.length) && (args.length < 3))) {
+	    System.err.print("Parametros incorrectos: ");
+	    System.err.println("VersionControlServer <hostName> <port>");
+	    System.exit(1);
+    }
+
+    try {
+      
+	    host = args[0];
+	    port = Integer.parseInt(args[1]);
+      
+    }
+    catch (Exception e) {
+	    System.out.println();
+	    System.out.println("java.lang.Exception");
+	    System.out.println(e);
+    }
      
     InetAddress group = InetAddress.getByName("225.0.0.5");
      
@@ -87,23 +109,34 @@ public class VersionControlServer{
      
     s.joinGroup(group);
     p.joinGroup(group);
+    
+    /* mando un mensaje con mi id diciendo q me uno a la red */
      
     VersionControlServer v = new VersionControlServer(s, p);
     VersionControlImpl vci = new VersionControlImpl();
     
+    
     /*
-     llamo a eleccion y hago join con este hilo
-     si soy electo, hago cosas de coordinador hasta q me muera
-     * 
-     * hilos: servercommunitation
-     * serverelection
-     * falta uno
-     */
+    Message m = new Message(v.getId(),EnumMessageType.ENTRY);
+    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+    ObjectOutputStream oos = new ObjectOutputStream(bout);
+    oos.writeObject(m);
+    byte[] bSend = bout.toByteArray();
+    DatagramPacket pack = new DatagramPacket(bSend, bSend.length);
+    //p.send(pack); */
+    
+    VersionControl c = (VersionControl) Naming.lookup("rmi://" + host + ":" + port + "/VCS");
+    
+
      
-    /*updateclient = actualizar los archivos*/
+    /* updateServer = actualizar los archivos */
+    
+    
+    
+    
     
     Thread election = new ServerElection(s, v);
-    Thread listenMessages = new ServerCommunication();
+    Thread listenMessages = new ServerCommunication(p,v);
     
     election.start();
     listenMessages.start();
