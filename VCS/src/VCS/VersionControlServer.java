@@ -27,6 +27,7 @@ public class VersionControlServer{
   private HashMap<Integer, InetAddress> dns;
   private InetAddress multicastAddress;
   private int id;
+  private VersionControl coord;
 
   /**
    * Constructor to build a new version control server
@@ -75,6 +76,13 @@ public class VersionControlServer{
     this.coordId = coordId;
   }
 
+  /**
+   * 
+   * @param args Parámetros recibidos por consola: ID, IP
+   * @throws InterruptedException
+   * @throws RemoteException
+   * @throws IOException 
+   */
    public static void main(String[] args) throws InterruptedException, RemoteException, IOException{
      
     //parametro de entrada ip rmiregistry
