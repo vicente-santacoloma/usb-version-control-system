@@ -27,12 +27,13 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
 
   private MulticastSocket _messages;
   private HashMap<Integer, InetAddress> _dns;
-
-  public VersionControlImpl(MulticastSocket messages, HashMap dns) {
+  private String _configFile;
+  public VersionControlImpl(MulticastSocket messages, HashMap dns,String configFile) {
     super();
 
     _messages = messages;
     _dns = dns;
+    _configFile = configFile;
   }
 
   @Override
