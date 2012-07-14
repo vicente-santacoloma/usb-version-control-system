@@ -13,9 +13,7 @@ import java.net.*;
  */
 public class ServerElection extends Thread{
   private MulticastSocket elections;
-  private ServerSocket waiter;
   private VersionControlServer father;
-  private Socket coord;
   private byte[] bRecv;
   private byte[] bSend;
   private ByteArrayInputStream bin;
@@ -44,12 +42,9 @@ public class ServerElection extends Thread{
   
   @Override
   public void run(){
-    //Buffers for reading and writing on packets
-
     /*Listen to sockets all the time and take the necessary actions*/
     try{
       for(;;){
-
         listenMulticast();
        /*Check if coordinator is alive*/
         coordA = father.getDns().get(father.getCoordId());
@@ -84,7 +79,9 @@ public class ServerElection extends Thread{
    */
   private boolean startElections(){
     try{
+      System.out.println(father.getId() + ": Starting election process");
       msg = new Message(father.getId(), EnumMessageType.ELECTION_S);
+      bout = new ByteArrayOutputStream();
       oos = new ObjectOutputStream(bout);
       oos.writeObject(msg);
       bSend = bout.toByteArray();
@@ -98,6 +95,7 @@ public class ServerElection extends Thread{
 
       /*I'm the new coordinator, notify all*/
       if(respSock == null){
+        System.out.println(father.getId() + ": No one responded, I'm coordinator");
         /*I'm the new coordinator, notify and return*/
         msg = new Message(father.getId(), EnumMessageType.COORDINATOR);
         bout = new ByteArrayOutputStream();
@@ -110,13 +108,18 @@ public class ServerElection extends Thread{
       }
       
       /*If here, a response was received, wait on multicast for coordinator*/
+      System.out.println(father.getId() + ": A response was received, waiting "
+              + "for coordinator");
       int mcRet = listenMulticast();
       while((mcRet == 1) || (mcRet == -1))
         mcRet = listenMulticast();
       
       if(mcRet == 0){
-        startElections();
+        System.out.println(father.getId() + ": Socket timed out, restarting "
+                + "elections");
+        return startElections();
       }else{
+        System.out.println(father.getId() + ": Coordinator elected and saved");
         return false;
       }
     }catch(SocketException se){
@@ -138,10 +141,14 @@ public class ServerElection extends Thread{
     try{
       bRecv = new byte[65535];
       pack = new DatagramPacket(bRecv, bRecv.length);
-      elections.setSoTimeout(1000);
+      elections.setSoTimeout(5000);
+      System.out.println(father.getId() + ": Listening to the elections "
+              + "multicast socket");
       elections.receive(pack);
-      if(pack.getLength() == 0)
+      if(pack.getLength() == 0){
+        System.out.println(father.getId() + ": No package received");
         return 0;
+      }
       
       /*Received something, analize*/
       bin = new ByteArrayInputStream(pack.getData());
@@ -150,20 +157,25 @@ public class ServerElection extends Thread{
       
       if(msg.getType() == EnumMessageType.COORDINATOR){
         /*A new coordinator has been elected*/
+        System.out.println(father.getId() + ": Received a COORDINATOR message"
+                + " from: " + msg.getId());
         father.setCoordId(msg.getId());
         return 2;
       }else if(msg.getType() == EnumMessageType.ELECTION_S){
+        System.out.println(father.getId() + ": Received an ELECTION_S message "
+                + "from " + msg.getId());
         if(msg.getId() > father.getId()){
           /*Respond to the process that sent the message and start elections*/
           respSock = new Socket(father.getDns().get(msg.getId()), 11149);
           pwout = new PrintWriter(respSock.getOutputStream());
+          respSock.setSoTimeout(50);
           pwout.println("Sending response to election from " + father.getId());
           startElections();
         }
         return 1;
       }else{
-        System.out.println("Message received on multicast port: 10602 "
-                + "that is not of a valid type");
+        System.out.println("Message received on elections multicast "
+                + "that is not of invalid type: " + msg.getType());
         return -1;
       }
     }catch(SocketException se){
