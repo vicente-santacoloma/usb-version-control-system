@@ -97,7 +97,7 @@ public class VersionControlServer{
     p.joinGroup(group);
      
     VersionControlServer v = new VersionControlServer(s, p);
-    VersionControlImpl vci = new VersionControlImpl();
+    VersionControlImpl vci = new VersionControlImpl(p,v.dns);
     
     /*
      llamo a eleccion y hago join con este hilo
