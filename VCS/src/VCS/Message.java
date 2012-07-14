@@ -10,7 +10,8 @@ import java.io.Serializable;
  *
  * @author Guille
  */
-public class Message implements Serializable{
+public class Message implements Serializable {
+  
   private EnumMessageType type;
   private Byte[] configFile;
   private FileDescription[] commitElements;
