@@ -4,6 +4,7 @@
  */
 package VCS;
 
+import java.net.InetAddress;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -22,6 +23,9 @@ public interface VersionControl extends Remote {
     public FileDescription[] update()
       throws RemoteException;
     
-    public FileDescription[] updateClient(int id)
+    public FileDescription[] updateServer(int id)
+      throws RemoteException;
+    
+    public boolean requestEntry(int id, InetAddress ip)
       throws RemoteException;
 }

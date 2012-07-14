@@ -18,13 +18,6 @@ public class Message implements Serializable {
   private int id;
   private FileDescription sentFile;
 
-  /**
-    * Constructor for an election response message 
-    */
-  public Message() {
-    this.type = EnumMessageType.ELECTION_R;
-  }
-
 
   /**
    * Constructor for a message to send a file update
