@@ -9,7 +9,7 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
-import java.util.Dictionary;
+import java.util.HashMap;
 
 /**
  *
@@ -20,8 +20,9 @@ public class VersionControlServer extends RemoteObject implements VersionControl
   private MulticastSocket elections;
   private MulticastSocket messages;
   private int coordId;
-  private Dictionary<Integer, InetAddress> dns;
+  private HashMap<Integer, InetAddress> dns;
   private InetAddress multicastAddress;
+  private int id;
 
   /**
    * Constructor to build a new version control server
@@ -70,12 +71,15 @@ public class VersionControlServer extends RemoteObject implements VersionControl
 
 
   //Getters
+  public int getId() {
+    return id;
+  }
+
   public int getCoordId() {
     return coordId;
   }
 
-
-  public Dictionary<Integer, InetAddress> getDns() {
+  public HashMap<Integer, InetAddress> getDns() {
     return dns;
   }
 
@@ -86,7 +90,16 @@ public class VersionControlServer extends RemoteObject implements VersionControl
   public MulticastSocket getMessages() {
     return messages;
   }
+
+  public InetAddress getMulticastAddress() {
+    return multicastAddress;
+  }
   
+  //Setters
+  public void setCoordId(int coordId) {
+    this.coordId = coordId;
+  }
+    
    public static void main(String[] args) throws InterruptedException{
      
      //parametro de entrada ip rmiregistry
