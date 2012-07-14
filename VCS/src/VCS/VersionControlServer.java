@@ -4,18 +4,22 @@
  */
 package VCS;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
+import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
 import java.util.HashMap;
-
 /**
  *
  * @author Guille
  */
-public class VersionControlServer extends RemoteObject implements VersionControl{
+public class VersionControlServer{
   
   private MulticastSocket elections;
   private MulticastSocket messages;
@@ -30,7 +34,7 @@ public class VersionControlServer extends RemoteObject implements VersionControl
    * @param elections
    * @param messages 
    */ 
-  public VersionControlServer(MulticastSocket elections, MulticastSocket messages) {
+  public VersionControlServer(MulticastSocket elections, MulticastSocket messages){
     this.elections = elections;
     this.messages = messages;
     
@@ -40,36 +44,7 @@ public class VersionControlServer extends RemoteObject implements VersionControl
       System.out.println( e );
     }
   }
-    
-  @Override
-  public String commit(FileDescription[] files)
-    throws RemoteException{
-
-    return null;
-  }
-
-  @Override
-  public FileDescription[] checkout()
-    throws RemoteException{
-
-    return null;
-  }
-
-  @Override
-  public FileDescription[] update()
-    throws RemoteException{
-
-    return null;
-  }
-
-  @Override
-  public FileDescription[] updateClient(int id)
-    throws RemoteException{
-
-    return null;
-  }
-
-
+  
   //Getters
   public int getId() {
     return id;
@@ -99,12 +74,22 @@ public class VersionControlServer extends RemoteObject implements VersionControl
   public void setCoordId(int coordId) {
     this.coordId = coordId;
   }
+
+   public static void main(String[] args) throws InterruptedException, RemoteException, IOException{
+     
+    //parametro de entrada ip rmiregistry
+     
+    InetAddress group = InetAddress.getByName("225.0.0.5");
+     
+    MulticastSocket s = new MulticastSocket(10602);
     
-   public static void main(String[] args) throws InterruptedException{
+    MulticastSocket p = new MulticastSocket(41895);
      
-     //parametro de entrada ip rmiregistry
+    s.joinGroup(group);
+    p.joinGroup(group);
      
-     
+    VersionControlServer v = new VersionControlServer(s, p);
+    VersionControlImpl vci = new VersionControlImpl();
     
     /*
      llamo a eleccion y hago join con este hilo
@@ -117,7 +102,7 @@ public class VersionControlServer extends RemoteObject implements VersionControl
      
     /*updateclient = actualizar los archivos*/
     
-    Thread election = new ServerElection();
+    Thread election = new ServerElection(s, v);
     Thread listenMessages = new ServerCommunication();
     
     election.start();
@@ -127,8 +112,33 @@ public class VersionControlServer extends RemoteObject implements VersionControl
     
     /* coordinador se inscribe en rmi y resuelve peticiones del cliente */
     
+    Naming.rebind("VCS", vci);
+   
+    // escuchar por un socket particular
     
-
+    Socket clientSocket = null;
+    
+    ServerSocket acceptS = null;
+    
+    try {
+      acceptS = new ServerSocket(41651);
+    } catch (IOException e) {
+      System.err.println("Could not listen on port.");
+      System.exit(1);
+    }
+    
+    PrintWriter out; 
+    String inputLine = "coordinator alive";
+    
+    while(true){
+    
+      clientSocket = acceptS.accept();
+      
+      out = new PrintWriter(clientSocket.getOutputStream(), true);
+      
+      out.println(inputLine);
+      
+    }
+    
   }
-
 }
