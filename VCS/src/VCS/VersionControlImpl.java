@@ -316,7 +316,6 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
         pack = new DatagramPacket(bSend, bSend.length);
         _messages.send(pack);
         
-        return true;
       }catch(IOException ioe){
         System.out.println(ioe.getMessage());
       }

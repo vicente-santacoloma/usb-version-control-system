@@ -4,7 +4,6 @@
  */
 package VCS;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.*;
@@ -12,6 +11,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import org.dom4j.Element;
 /**
  *
  * @author Guille
@@ -24,24 +24,25 @@ public class VersionControlServer{
   private HashMap<Integer, InetAddress> dns;
   private InetAddress multicastAddress;
   private int id;
-  private VersionControl coord;
+  private String hostrmi;
+  private int portrmi;
+  private VersionControl vci;
 
   /**
-   * Constructor to build a new version control server
-   * 
-   * @param elections
-   * @param messages 
-   */ 
-  public VersionControlServer(MulticastSocket elections, MulticastSocket messages, int id){
-    this.elections = elections;
-    this.messages = messages;
+   * Constructor for class VersionControlServer
+   * @param dns
+   * @param id
+   * @param hostrmi
+   * @param portrmi
+   * @param vci 
+   */
+  public VersionControlServer(HashMap<Integer, InetAddress> dns, int id,
+          String hostrmi, int portrmi, VersionControl vci) {
+    this.dns = dns;
     this.id = id;
-    
-    try {
-      this.multicastAddress = InetAddress.getByName("225.0.0.5");
-    } catch( UnknownHostException e ) {
-      System.out.println( e );
-    }
+    this.hostrmi = hostrmi;
+    this.portrmi = portrmi;
+    this.vci = vci;
   }
   
   //Getters
@@ -89,24 +90,23 @@ public class VersionControlServer{
     String hostrmi = null;
     int portrmi = 0;
     int id = 0;
-    String ip = null;
-    int port =0;
+    InetAddress ip = null;
   
      //parametro de entrada ip rmiregistry
     // recibir por linea de comando mi ip y mi id
      
-    if (!((0 < args.length) && (args.length < 5))) {
-	    System.err.print("Parametros incorrectos: ");
-	    System.err.println("VersionControlServer <hostNamermi> <portrmi> <ID> <IP>");
+    if (!((0 < args.length) && (args.length < 4))) {
+	    System.out.print("Parametros incorrectos: ");
+	    System.out.println("VersionControlServer <hostNamermi> <ID> <IP>");
 	    //System.exit(1);
     }
 
     try {
       
 	    hostrmi = args[0];
-	    portrmi = Integer.parseInt(args[1]);
-      id = Integer.parseInt(args[2]);
-      ip = args[3];
+	    portrmi = 40619;
+      id = Integer.parseInt(args[1]);
+      ip = InetAddress.getByName(args[2]);
       
     }
     catch (Exception e) {
@@ -127,76 +127,86 @@ public class VersionControlServer{
     p.joinGroup(group);
     
     System.out.println("Me uni al grupo");
-    
-    /* mando un mensaje con mi id diciendo q me uno a la red */
-     
-    VersionControlServer v = new VersionControlServer(s, p,id);
-    //cambiar el 10
-    VersionControlImpl vci = new VersionControlImpl(p,v.dns,"vcsinfo.xml",10);
-    
-    VersionControl c = (VersionControl) Naming.lookup("rmi://" + hostrmi + ":" + portrmi 
+        
+    VersionControl vci = (VersionControl) Naming.lookup("rmi://" + hostrmi + ":" + portrmi 
+
             + "/VCS");
      
-    /* updateServer = actualizar los archivos */
+    /* mando un mensaje con mi id diciendo q me uno a la red */
+    vci.requestEntry(id, ip);
     
-    System.out.println("actualizando los archivos");
+    System.out.println("Actualizando los archivos");
     
-    FileDescription[] files = vci.updateServer(v.getId());
+    FileDescription[] files = vci.updateServer(id);
     
-    for(FileDescription fd: files){
-    
+    for(FileDescription fd: files)
       fd.writeData();
-    }
     
+    HashMap<Integer, InetAddress> dns = new HashMap<Integer, InetAddress>();
+    
+    for(Element serv : FileParser.serverList(FileParser.parserFile("location.xml")))
+      dns.put(Integer.parseInt(FileParser.getValueOfServer(serv, "id")),
+              InetAddress.getByName(FileParser.getValueOfServer(serv, "ip"))
+              );
+    
+    VersionControlServer v = new VersionControlServer(dns, id, hostrmi, portrmi,
+            vci);
+   
     Thread election = new ServerElection(s, v);
-    Thread listenMessages = new ServerCommunication(p,v);
+    Thread listenMessages = new ServerCommunication(p, v);
     
-    election.start();
     listenMessages.start();
+    election.start();
     
     System.out.println("se crearon los hilos, espero por el join");
-    
     election.join();
-    
+    listenMessages.join();
+   }
+   
+   public void coordFunctions(){
     System.out.println("soy coord: me conecto al rmi");
     
     /* coordinador se inscribe en rmi y resuelve peticiones del cliente */
     
     try {
-      Naming.rebind("rmi://" + hostrmi + ":" + portrmi + "/VCS", vci);
+      Naming.rebind("rmi://" + this.hostrmi + ":" + this.portrmi + "/VCS", this.vci);
+    
+      System.out.println("se unio al grupo, espero peticiones de vida");
+
+      // escuchar por un socket particular
+
+      Socket clientSocket;
+
+      ServerSocket acceptS = null;
+
+      try {
+        acceptS = new ServerSocket(41651);
+      } catch (IOException e) {
+        System.err.println("Could not listen on port.");
+        //System.exit(1);
+      }
+
+      PrintWriter out; 
+      String inputLine = "Coordinator alive";
+
+      while(this.id == this.coordId){
+
+        acceptS.setSoTimeout(8000);
+        clientSocket = acceptS.accept();
+
+        if(null == clientSocket || clientSocket.isClosed())
+          continue;
+        System.out.println("Alguien me pregunto si vivo");
+
+        out = new PrintWriter(clientSocket.getOutputStream(), true);
+        clientSocket.setSoTimeout(5);
+        out.println(inputLine);
+        clientSocket.close();
+      }
+      acceptS.close();
     } catch (IOException e) {
-      System.err.println("Could not connect to RMI.");
+      System.out.println("Could not connect to RMI.");
       //System.exit(1);
-    }
-    
-    System.out.println("se unio al grupo, espero peticiones de vida");
-    
-    // escuchar por un socket particular
-    
-    Socket clientSocket = null;
-    
-    ServerSocket acceptS = null;
-    
-    try {
-      acceptS = new ServerSocket(41651);
-    } catch (IOException e) {
-      System.err.println("Could not listen on port.");
-      //System.exit(1);
-    }
-    
-    PrintWriter out; 
-    String inputLine = "coordinator alive";
-    
-    while(true){
-    
-      clientSocket = acceptS.accept();
-      
-      System.out.println("alguien me pregunto si vivo");
-      
-      out = new PrintWriter(clientSocket.getOutputStream(), true);
-      
-      out.println(inputLine);
-      
     }
     
   }

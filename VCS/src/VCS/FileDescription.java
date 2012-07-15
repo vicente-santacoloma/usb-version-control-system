@@ -79,10 +79,10 @@ public class FileDescription implements Serializable {
     
     try {
       
-      createDirectories(fileName);
+      createDirectories(this.fileName);
       
-      FileOutputStream out = new FileOutputStream(fileName);
-      out.write(data);
+      FileOutputStream out = new FileOutputStream(this.fileName);
+      out.write(this.data);
     } catch (FileNotFoundException ex) {
       Logger.getLogger(FileDescription.class.getName()).log(Level.SEVERE, null, ex);
     } catch (IOException ex) {

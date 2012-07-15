@@ -44,6 +44,8 @@ public class ServerElection extends Thread{
   public void run(){
     /*Listen to sockets all the time and take the necessary actions*/
     try{
+      /*Call elections to get the coordinators id*/
+      startElections();
       for(;;){
         listenMulticast();
        /*Check if coordinator is alive*/
@@ -53,17 +55,15 @@ public class ServerElection extends Thread{
         coordSocket.setSoTimeout(3000);
         coordAlive = bufIn.readLine();
 
+        coordSocket.close();
         /*Coordinator is alive, close socket and continue to listen to multicast*/
         if(coordAlive != null){
             bufIn.close();
             continue;
         }
 
-        coordSocket.close();
         /*If got here, assume coordinator is dead and start election*/
-        if(startElections()){
-          return;
-        }
+        startElections();
       }
     }catch(SocketException se){
       System.out.println(se.getMessage());
@@ -80,12 +80,14 @@ public class ServerElection extends Thread{
   private boolean startElections(){
     try{
       System.out.println(father.getId() + ": Starting election process");
+      
       msg = new Message(father.getId(), EnumMessageType.ELECTION_S);
       bout = new ByteArrayOutputStream();
       oos = new ObjectOutputStream(bout);
       oos.writeObject(msg);
       bSend = bout.toByteArray();
       pack = new DatagramPacket(bSend, bSend.length);
+      
       if(resp != null && !resp.isClosed())
         resp.close();
       resp = new ServerSocket(11149);
@@ -96,7 +98,7 @@ public class ServerElection extends Thread{
       /*I'm the new coordinator, notify all*/
       if(respSock == null){
         System.out.println(father.getId() + ": No one responded, I'm coordinator");
-        /*I'm the new coordinator, notify and return*/
+        
         msg = new Message(father.getId(), EnumMessageType.COORDINATOR);
         bout = new ByteArrayOutputStream();
         oos = new ObjectOutputStream(bout);
@@ -104,10 +106,13 @@ public class ServerElection extends Thread{
         bSend = bout.toByteArray();
         pack = new DatagramPacket(bSend, bSend.length);
         elections.send(pack);
+        father.setCoordId(father.getId());
+        CoordinatorFunctions cf = new CoordinatorFunctions(father);
+        cf.start();
         return true;
       }
       
-      /*If here, a response was received, wait on multicast for coordinator*/
+      /*If here, a response was received, wait for coordinator*/
       System.out.println(father.getId() + ": A response was received, waiting "
               + "for coordinator");
       int mcRet = listenMulticast();
@@ -164,7 +169,7 @@ public class ServerElection extends Thread{
       }else if(msg.getType() == EnumMessageType.ELECTION_S){
         System.out.println(father.getId() + ": Received an ELECTION_S message "
                 + "from " + msg.getId());
-        if(msg.getId() > father.getId()){
+        if(msg.getId() <= father.getId()){
           /*Respond to the process that sent the message and start elections*/
           respSock = new Socket(father.getDns().get(msg.getId()), 11149);
           pwout = new PrintWriter(respSock.getOutputStream());
