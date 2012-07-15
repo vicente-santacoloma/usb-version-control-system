@@ -91,7 +91,20 @@ public  class FileParser {
       
       return null;
   }
-  
+   public static void setValueOfFile(Element file, String attribute, String value )
+  {
+      List<Element> list = file.elements();
+      for (Element lista:list)
+      {
+          if(attribute.equals( lista.getName()))
+          {
+            lista.setText(value);
+           return;
+          }
+      }
+
+  }
+   
   public static void updateXMLFile(String config,Document document)
   {
         try {
@@ -104,6 +117,26 @@ public  class FileParser {
           //Ver que hacer aqui
         }
       
+  }
+  
+  
+  public static void addElementServer(Document document, String idServer, String ipServer,FileDescription[] files )
+  {
+    Element server = document.addElement( "server" );
+    server.addElement("id").addText(idServer);
+    server.addElement("ip").addText(ipServer);
+    Element data = server.addElement("data");
+    //Creo el nuevo file
+    if (files != null) {
+        for (int i = 0; i < files.length; i++) {
+        Element file = data.addElement("file");
+        file.addElement("name").setText(files[i].getFileName());
+         file.addElement("version").setText(Integer.toString( files[i].getVersion()));
+         file.addElement("timestamp").setText((files[i].getTimestamp()).toString());
+         file.addElement("user").setText(files[i].getUserName());
+        }
+    }
+  
   }
   
 }

@@ -14,7 +14,7 @@ import java.rmi.RemoteException;
  */
 public interface VersionControl extends Remote {
   
-    public String commit(FileDescription[] files)
+    public EnumVCS commit(FileDescription[] files)
       throws RemoteException;
     
     public FileDescription[] checkout()
