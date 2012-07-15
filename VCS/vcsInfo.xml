@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+
+
+<root>
+  <server>
+    <id>
+      1
+    </id>
+    <ip>
+      19.5.8.210
+    </ip>
+    <data>
+      <file>
+        <name>
+         gargantaProfunda.mov
+        </name>
+        <version>
+          2
+        </version>
+        <timestamp>
+          24560
+        </timestamp>
+        <user>
+          lavz24
+        </user>
+      </file>
+      
+      <file>
+        <name>
+          sexoDuro.avi
+        </name>
+        <version>
+          1
+        </version>
+        <timestamp>
+          24560
+        </timestamp>
+        <user>
+          vsancolomona
+        </user>
+      </file>
+    </data>
+  </server>
+  
+  <server>
+    <id>
+      2
+    </id>
+    <ip>
+      19.5.8.180
+    </ip>
+    <data>
+      <file>
+        <name>
+         gatitosLindos.mov
+        </name>
+        <version>
+          1
+        </version>
+        <timestamp>
+          24560
+        </timestamp>
+        <user>
+          ninina
+        </user>
+      </file>
+    </data>
+  </server>
+</root>

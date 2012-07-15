@@ -47,16 +47,48 @@ public  class FileParser {
   {
      Element root = document.getRootElement();
      List<Element> list = root.elements();
-          
-     /*
+
+     return list;
+  }
+  
+  public static String getValueOfServer(Element server, String attribute )
+  { 
+      List<Element> list = server.elements();
       for (Element lista:list)
       {
-          List<Element> atributo = lista.elements();
-           System.out.println("Nombre: "+lista.getName());
-         
-      }*/
-     
-     return list;
+          if(attribute.equals( lista.getName()))
+          {
+              return lista.getStringValue();
+          }
+      }
+      return "";
+  }
+  public static List<Element> getValueFileServer(Element server )
+  {
+      List<Element> list = server.elements();
+      for (Element lista:list)
+      {
+          if("data".equals( lista.getName()))
+          {
+              return lista.elements();
+          }
+      }
+      
+      return null;
+  }
+  
+  public static String getValueOfFile(Element file, String attribute )
+  {
+      List<Element> list = file.elements();
+      for (Element lista:list)
+      {
+          if(attribute.equals( lista.getName()))
+          {
+              return lista.getStringValue();
+          }
+      }
+      
+      return null;
   }
   
   public static void updateXMLFile(String config,Document document)
