@@ -4,7 +4,7 @@
  */
 package VCS;
 
-//import com.sun.org.apache.xml.internal.serializer.utils.Messages;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -13,12 +13,10 @@ import java.io.ObjectOutputStream;
 import java.net.*;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import org.dom4j.Document;
 import org.dom4j.Element;
+
 
 /**
  *
@@ -29,21 +27,49 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   private MulticastSocket _messages;
   private HashMap<Integer, InetAddress> _dns;
   private String _configFile;
-  public VersionControlImpl(MulticastSocket messages, HashMap dns,String configFile) {
+  private int _kTolerance;
+  public VersionControlImpl(MulticastSocket messages, HashMap dns,String configFile, int kTolerance) {
     super();
 
     _messages = messages;
     _dns = dns;
     _configFile = configFile;
+    _kTolerance = kTolerance;
   }
 
+
+  
+  private ArrayList<String> serverTolerance(HashMap<String,Integer> servers)
+  {
+    
+    //Si no funcion ausar .compound(Ordering.natural())
+    ValueComparator.MapStringIntegerComparator bvc = new ValueComparator.MapStringIntegerComparator(servers);
+    TreeMap<String,Integer> sorted_map = new TreeMap(bvc);
+    sorted_map.putAll(servers);
+    
+    ArrayList<String> tolerance = new ArrayList<String>(_kTolerance);
+    int count = 0;
+    for (String key : sorted_map.keySet()) {
+      tolerance.add(key);
+      count++;
+      if(count ==_kTolerance )
+      {
+        break;
+      }
+    }
+    return tolerance;
+  }
   
   private EnumVCS checkConfigFile(Document document, FileDescription[] files)
   {
+    HashMap<String,Integer> totalSizeInServer = new HashMap<String,Integer>();
+    int count = 0;
+    
     List<Element> servers = FileParser.serverList(document);
     
     for(Element server : servers)
     {
+      count = 0;
       List<Element> file4Server = FileParser.getDataElements(server);
       
       for(Element fil: file4Server)
@@ -61,13 +87,12 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
             {
            
               
-              FileParser.setValueOfFile(fil,"version", Integer.toString( actualVersion+1) );
+              FileParser.setValueOfFile(fil,"version", Integer.toString( files[i].getVersion()+1) );
               FileParser.setValueOfFile(fil,"timestamp",files[i].getTimestamp().toString());
               FileParser.setValueOfFile(fil,"user",files[i].getUserName());
               FileParser.setValueOfFile(fil, "size", Integer.toString(files[i].getData().length));
 
-            return EnumVCS.OK;
-            } else if (actualVersion < files[i].getVersion())
+            }else if(actualVersion < files[i].getVersion())
             {
               return EnumVCS.CHECKOUT;
             } else
@@ -76,11 +101,29 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
             }
           }
         }
+        count += Integer.parseInt(FileParser.getValueOfFile(fil, "size"));
       }
-      
+      totalSizeInServer.put(FileParser.getValueOfServer(server, "id"), Integer.valueOf(count));
     }
     
-    return EnumVCS.ERROR;
+    HashSet<String> totalFiles = FileParser.getTotalFiles(document);
+    ArrayList<String> serverOrdenados = serverTolerance( totalSizeInServer);
+    
+    for(int i = 0; i< files.length; i++)
+    {
+      if(!totalFiles.contains(files[i].getFileName()))
+      {
+        for(int k= 0; k <_kTolerance;k++)
+        {
+          FileDescription[] descrip = new FileDescription[1];
+          descrip[0] = new FileDescription(files[i].getFileName(),files[i].getVersion(),files[i].getTimestamp()
+                  , files[i].getUserName(),files[i].getData());
+          FileParser.addFileInServer(document, serverOrdenados.get(k), descrip);
+        }
+      }
+    }
+    
+    return EnumVCS.OK;
   }
   
   @Override
