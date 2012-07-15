@@ -128,8 +128,7 @@ public class VersionControlServer{
     
     System.out.println("Me uni al grupo");
         
-    VersionControl vci = (VersionControl) Naming.lookup("rmi://" + hostrmi + ":" + portrmi 
-
+    VersionControl vci = (VersionControl) Naming.lookup("rmi://" + hostrmi + ":" + portrmi
             + "/VCS");
      
     /* mando un mensaje con mi id diciendo q me uno a la red */
@@ -150,7 +149,7 @@ public class VersionControlServer{
               );
     
     VersionControlServer v = new VersionControlServer(dns, id, hostrmi, portrmi,
-            vci);
+            new VersionControlImpl(p, dns, "location.xml", 3));
    
     Thread election = new ServerElection(s, v);
     Thread listenMessages = new ServerCommunication(p, v);
