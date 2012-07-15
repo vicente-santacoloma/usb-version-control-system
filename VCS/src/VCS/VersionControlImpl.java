@@ -25,14 +25,12 @@ import org.dom4j.Element;
 public class VersionControlImpl extends RemoteObject implements VersionControl {
 
   private MulticastSocket _messages;
-  private HashMap<Integer, InetAddress> _dns;
   private String _configFile;
   private int _kTolerance;
-  public VersionControlImpl(MulticastSocket messages, HashMap dns,String configFile, int kTolerance) {
+  public VersionControlImpl(MulticastSocket messages, String configFile, int kTolerance) {
     super();
 
     _messages = messages;
-    _dns = dns;
     _configFile = configFile;
     _kTolerance = kTolerance;
   }

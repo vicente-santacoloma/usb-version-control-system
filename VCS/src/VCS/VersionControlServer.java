@@ -43,6 +43,7 @@ public class VersionControlServer{
     this.hostrmi = hostrmi;
     this.portrmi = portrmi;
     this.vci = vci;
+    this.coordId = -1;
   }
   
   //Getters
@@ -98,7 +99,7 @@ public class VersionControlServer{
     if (!((0 < args.length) && (args.length < 4))) {
 	    System.out.print("Parametros incorrectos: ");
 	    System.out.println("VersionControlServer <hostNamermi> <ID> <IP>");
-	    //System.exit(1);
+	    return;
     }
 
     try {
@@ -127,9 +128,17 @@ public class VersionControlServer{
     p.joinGroup(group);
     
     System.out.println("Me uni al grupo");
-        
-    VersionControl vci = (VersionControl) Naming.lookup("rmi://" + hostrmi + ":" + portrmi 
-
+    
+    VersionControlServer v = new VersionControlServer(null, id, hostrmi, portrmi,
+            new VersionControlImpl(p, "location.xml", 3));
+   
+    Thread election = new ServerElection(s, v);
+    election.start();
+    
+    while(v.coordId == -1)
+      Thread.sleep(6000);
+    
+    VersionControl vci = (VersionControl) Naming.lookup("rmi://" + hostrmi + ":" + portrmi
             + "/VCS");
      
     /* mando un mensaje con mi id diciendo q me uno a la red */
@@ -148,20 +157,21 @@ public class VersionControlServer{
       dns.put(Integer.parseInt(FileParser.getValueOfServer(serv, "id")),
               InetAddress.getByName(FileParser.getValueOfServer(serv, "ip"))
               );
-    
-    VersionControlServer v = new VersionControlServer(dns, id, hostrmi, portrmi,
-            vci);
-   
-    Thread election = new ServerElection(s, v);
+
+    v.setDns(dns);
+    System.out.println("Ya tengo DNS!");
     Thread listenMessages = new ServerCommunication(p, v);
     
     listenMessages.start();
-    election.start();
     
     System.out.println("se crearon los hilos, espero por el join");
     election.join();
     listenMessages.join();
    }
+
+  public void setDns(HashMap<Integer, InetAddress> dns) {
+    this.dns = dns;
+  }
    
    public void coordFunctions(){
     System.out.println("soy coord: me conecto al rmi");
