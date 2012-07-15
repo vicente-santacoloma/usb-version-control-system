@@ -6,10 +6,7 @@ package VCS;
 
 import java.io.*;
 import java.sql.Date;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -101,6 +98,21 @@ public class FileDescription implements Serializable {
     this.userName = userName;
     this.data = data;
   }
+  
+  private void createDirectories(String path){
+  
+    String[] tokens = path.split("/");
+    File f;
+    String currentPath = ".";
+    
+    for(int i = 0; i < tokens.length -1; ++i){
+      
+      currentPath += "/" + tokens[i];
+      f = new File(currentPath);
+      if (!f.exists()) f.mkdir();
+    }
+     
+  }
 
   // Getters and Setters
 
@@ -144,19 +156,4 @@ public class FileDescription implements Serializable {
     this.version = version;
   }
   
-  private void createDirectories(String path){
-  
-    String[] tokens = path.split("/");
-    File f;
-    String currentPath = ".";
-    
-    for(int i = 0; i < tokens.length -1; ++i){
-      
-      currentPath += "/" + tokens[i];
-      f = new File(currentPath);
-      if (!f.exists()) f.mkdir();
-    }
-     
-  }
-
 }
