@@ -13,7 +13,7 @@ import java.io.Serializable;
 public class Message implements Serializable {
   
   private EnumMessageType type;
-  private Byte[] configFile;
+  private byte[] configFile;
   private FileDescription[] commitElements;
   private int id;
   private FileDescription sentFile;
@@ -35,7 +35,7 @@ public class Message implements Serializable {
    * @param configFile
    * @param commitElements 
    */
-  public Message(Byte[] configFile, FileDescription[] commitElements) {
+  public Message(byte[] configFile, FileDescription[] commitElements) {
     this.commitElements = commitElements;
     this.configFile = configFile;
     this.type = EnumMessageType.COMMIT;
@@ -68,7 +68,7 @@ public class Message implements Serializable {
     return type;
   }
 
-  public Byte[] getConfigFile() {
+  public byte[] getConfigFile() {
     return configFile;
   }
   

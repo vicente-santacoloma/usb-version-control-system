@@ -4,6 +4,7 @@
  */
 package VCS;
 
+import com.sun.org.apache.xml.internal.serializer.utils.Messages;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -18,6 +19,7 @@ import java.rmi.server.RemoteObject;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.dom4j.Document;
 
 /**
  *
@@ -39,25 +41,34 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   @Override
   public String commit(FileDescription[] files)
           throws RemoteException {
-    
-    Message mensaje = new Message();
-    
-    ByteArrayOutputStream bs= new ByteArrayOutputStream();
-    ObjectOutputStream os = new ObjectOutputStream (bs);
-    os.writeObject(mensaje);  // this es de tipo DatoUdp
-    os.close();
-    byte[] bytes =  bs.toByteArray();
-    
-    DatagramPacket paquete = new DatagramPacket(bytes, bytes.length);
-    messages.send(paquete);
-    
-   
-    for (int i = 0; i < files.length; i++) {
-      
-      
-    }
+        try {
 
-    return null;
+             Document document = FileParser.parserFile(_configFile);
+             //Actualizar Config File
+             //Revisar lo de la versiones??
+             
+             ByteArrayOutputStream bs= new ByteArrayOutputStream();
+             ObjectOutputStream os = new ObjectOutputStream (bs);
+             os.writeObject(document);
+             os.close();
+             
+             byte[] configData =  bs.toByteArray();
+  
+            Message mensaje = new Message(configData, files);
+            ByteArrayOutputStream bs2 = new ByteArrayOutputStream();
+            ObjectOutputStream os2 = new ObjectOutputStream (bs2);
+            os2.writeObject(mensaje); 
+            os2.close();
+            byte[] bytes =  bs2.toByteArray();
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
+             
+            _messages.send(packet);
+            return null;
+        } catch (IOException ex) {
+            System.err.println("No se pudo realizar el commit.");
+            //Hay q retornar el mensaje q no se realizo el commit
+            return null;
+        }
   }
 
   @Override
