@@ -6,6 +6,7 @@ package VCS;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.text.AttributedCharacterIterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -120,11 +121,11 @@ public  class FileParser {
   }
   
   
-  public static void addElementServer(Document document, String idServer, String ipServer,FileDescription[] files )
+  public static void addElementServer(Document document, int idServer, InetAddress ipServer,FileDescription[] files )
   {
     Element server = document.addElement( "server" );
-    server.addElement("id").addText(idServer);
-    server.addElement("ip").addText(ipServer);
+    server.addElement("id").addText(Integer.toString(idServer));
+    server.addElement("ip").addText(ipServer.toString());
     Element data = server.addElement("data");
     //Creo el nuevo file
     if (files != null) {

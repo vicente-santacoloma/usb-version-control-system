@@ -169,6 +169,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
     /*The element does not exist, add it and send the commit*/
     if(!exists){
       /*Add the element to the loaded document*/
+      FileParser.addElementServer(config, id, ip, null);
       try{
         bout = new ByteArrayOutputStream();
         oos = new ObjectOutputStream(bout);
