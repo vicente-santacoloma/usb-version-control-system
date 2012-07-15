@@ -68,7 +68,7 @@ public class ServerCommunication extends Thread{
         }
         System.out.println("Done loading server configuration");
         
-        if(msg.getType() == EnumMessageType.FILE_S){
+        if(msg.getType() == EnumMessageType.FILE_R){
           System.out.println(father.getId() + ": Received a request to send the files");
           /*The coordinator is requesting to receive all files contained in
            this server*/

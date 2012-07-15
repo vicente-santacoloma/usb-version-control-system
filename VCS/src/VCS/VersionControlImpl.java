@@ -77,7 +77,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
   
   @Override
-  public EnumVCS commit(FileDescription[] files)
+  public synchronized EnumVCS commit(FileDescription[] files)
           throws RemoteException {
         try {
 
@@ -148,7 +148,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
 
   @Override
-  public boolean requestEntry(int id, InetAddress ip) 
+  public synchronized boolean requestEntry(int id, InetAddress ip) 
     throws RemoteException {
     boolean exists = false;
     Document config = FileParser.parserFile("location.xml");
