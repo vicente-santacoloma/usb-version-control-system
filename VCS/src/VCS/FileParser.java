@@ -108,7 +108,7 @@ public  class FileParser {
   public static void updateXMLFile(String config,Document document)
   {
         try {
-            XMLWriter writer = new XMLWriter( new FileWriter(config));
+            XMLWriter writer = new XMLWriter(new FileWriter(config));
             
             writer.write(document);
             writer.close();

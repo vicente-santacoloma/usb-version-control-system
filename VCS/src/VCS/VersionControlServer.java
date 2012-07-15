@@ -146,7 +146,7 @@ public class VersionControlServer{
     
     System.out.println("actualizando los archivos");
     
-    c.updateServer(v.getId());
+    vci.updateServer(v.getId());
     
     Thread election = new ServerElection(s, v);
     Thread listenMessages = new ServerCommunication(p,v);

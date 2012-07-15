@@ -36,7 +36,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
 
   
-  private EnumVCS checkConfigFile( Document document ,FileDescription[] files)
+  private EnumVCS checkConfigFile(Document document, FileDescription[] files)
   {
     List<Element> servers = FileParser.serverList(document);
     
@@ -61,10 +61,10 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
               FileParser.setValueOfFile(fil,"timestamp",FileParser.getValueOfFile(fil, "timestamp") );
               FileParser.setValueOfFile(fil,"user",FileParser.getValueOfFile(fil, "user") );
             return EnumVCS.OK;
-            }else if(actualVersion < files[i].getVersion())
+            } else if (actualVersion < files[i].getVersion())
             {
               return EnumVCS.CHECKOUT;
-            }else
+            } else
             {
               return EnumVCS.UPDATE;
             }
@@ -91,22 +91,22 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
             if(result == EnumVCS.OK) 
             {
               ByteArrayOutputStream bs= new ByteArrayOutputStream();
-            ObjectOutputStream os = new ObjectOutputStream (bs);
-            os.writeObject(document);
-            os.close();
-             
-            byte[] configData =  bs.toByteArray();
-  
-            Message mensaje = new Message(configData, files);
-            ByteArrayOutputStream bs2 = new ByteArrayOutputStream();
-            ObjectOutputStream os2 = new ObjectOutputStream (bs2);
-            os2.writeObject(mensaje);
-            os2.close();
-            byte[] bytes =  bs2.toByteArray();
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
-             
-            _messages.send(packet);
-            return EnumVCS.OK;
+              ObjectOutputStream os = new ObjectOutputStream (bs);
+              os.writeObject(document);
+              os.close();
+
+              byte[] configData =  bs.toByteArray();
+
+              Message mensaje = new Message(configData, files);
+              ByteArrayOutputStream bs2 = new ByteArrayOutputStream();
+              ObjectOutputStream os2 = new ObjectOutputStream (bs2);
+              os2.writeObject(mensaje);
+              os2.close();
+              byte[] bytes =  bs2.toByteArray();
+              DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
+
+              _messages.send(packet);
+              return EnumVCS.OK;
               
             }else if(result == EnumVCS.CHECKOUT) 
             {
@@ -143,7 +143,21 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   @Override
   public FileDescription[] updateServer(int id)
     throws RemoteException{
-
+    
+    FileDescription[] files = this.checkout();
+    FileDescription[] update = null;
+    //Document doc = parserFile("vcsInfo.xml");
+    
+    for(int i = 0; i < files.length; i++){
+      
+      
+      
+    }
+    
+    
+    
+    
+    
     return null;
   }
 
