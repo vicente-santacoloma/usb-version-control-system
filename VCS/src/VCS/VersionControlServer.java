@@ -6,18 +6,11 @@ package VCS;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
-import java.util.List;
-import org.dom4j.Document;
-import org.dom4j.Element;
 /**
  *
  * @author Guille
@@ -126,7 +119,8 @@ public class VersionControlServer{
     /* mando un mensaje con mi id diciendo q me uno a la red */
      
     VersionControlServer v = new VersionControlServer(s, p);
-    VersionControlImpl vci = new VersionControlImpl(p,v.dns,"vcsinfo.xml");
+    //cambiar el 10
+    VersionControlImpl vci = new VersionControlImpl(p,v.dns,"vcsinfo.xml",10);
     
     
     /*
