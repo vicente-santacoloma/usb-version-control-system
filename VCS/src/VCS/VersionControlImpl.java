@@ -129,6 +129,8 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   public FileDescription[] checkout()
           throws RemoteException {
 
+    
+    
     return null;
   }
 
