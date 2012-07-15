@@ -5,19 +5,13 @@
 package VCS;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.MulticastSocket;
-import java.rmi.Naming;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -48,7 +42,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
     byte[] bytes =  bs.toByteArray();
     
     DatagramPacket paquete = new DatagramPacket(bytes, bytes.length);
-    messages.send(paquete);
+    _messages.send(paquete);
     
    
     for (int i = 0; i < files.length; i++) {

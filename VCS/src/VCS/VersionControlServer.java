@@ -125,25 +125,11 @@ public class VersionControlServer{
     VersionControlServer v = new VersionControlServer(s, p);
     VersionControlImpl vci = new VersionControlImpl(p,v.dns);
     
-    
-    /*
-    Message m = new Message(v.getId(),EnumMessageType.ENTRY);
-    ByteArrayOutputStream bout = new ByteArrayOutputStream();
-    ObjectOutputStream oos = new ObjectOutputStream(bout);
-    oos.writeObject(m);
-    byte[] bSend = bout.toByteArray();
-    DatagramPacket pack = new DatagramPacket(bSend, bSend.length);
-    //p.send(pack); */
-    
     VersionControl c = (VersionControl) Naming.lookup("rmi://" + host + ":" + port + "/VCS");
-    
-
      
     /* updateServer = actualizar los archivos */
     
-    
-    
-    
+    c.updateServer(v.getId());
     
     Thread election = new ServerElection(s, v);
     Thread listenMessages = new ServerCommunication(p,v);
