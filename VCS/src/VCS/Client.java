@@ -47,18 +47,18 @@ public class Client {
 
     if(files.length == 0) {
       System.out.println("No files to commit");
-      System.exit(1);  
+      System.exit(0);  
     }
 
     for(int i = 0; i < files.length; i++) {
       File file = new File(files[i]);
       if(!file.exists()) {
         System.out.println("File " + files[i] + "not found");
-        System.exit(1);
+        System.exit(0);
       }
     }
 
-    HashMap filesDescriptions = this.loadFilesDescriptions();
+    HashMap<String,FileDescription> filesDescriptions = this.loadFilesDescriptions();
     FileDescription [] filesDescriptionsArray = new FileDescription [files.length];
 
     for(int i = 0; i < files.length; i++) {      
@@ -71,23 +71,119 @@ public class Client {
       fileDescription.setTimestamp(new Date(Calendar.getInstance().getTime().getTime()));
       filesDescriptionsArray[i] = fileDescription;
     }
-    // server.commit(filesDescriptionsArray);
+    /*
+    EnumVCS enumVCS = null;
+    try {
+      enumVCS = server.commit(filesDescriptionsArray);
+    } catch (RemoteException ex) {
+      Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+    }
 
+    if(this.checkEnumVCS(enumVCS)) {
+      for(int i = 0; i < filesDescriptionsArray.length; i++)
+        filesDescriptionsArray[i].setVersion(filesDescriptionsArray[i].getVersion() + 1);
+
+      this.writeFilesDescriptions(filesDescriptions);
+    }
+    */
+    
     for(int i = 0; i < filesDescriptionsArray.length; i++)
       filesDescriptionsArray[i].setVersion(filesDescriptionsArray[i].getVersion() + 1);
 
     this.writeFilesDescriptions(filesDescriptions);
 
   }
+  
+  private boolean checkEnumVCS(EnumVCS enumVCS) {
+    
+    if(enumVCS == enumVCS.OK) {
+      System.out.println("The file(s) has been commited");
+      return true;
+    } else if(enumVCS == enumVCS.CHECKOUT) {
+      System.out.println("You must checkout");
+    } else if(enumVCS == enumVCS.UPDATE) {
+      System.out.println("You must update");
+    } else if(enumVCS == enumVCS.ERROR) {
+      System.out.println("operation failed");
+    }
+    
+    return false;
+  }
 
   public void clientCheckout() {
-
+    
+    FileDescription [] checkoutFilesDescriptions = null;
+    try {
+      checkoutFilesDescriptions = server.checkout();
+    } catch (RemoteException ex) {
+      Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    
+    if(checkoutFilesDescriptions.length == 0) {
+      System.out.println("No files to checkout");
+      System.exit(0);
+    }
+    
+    HashMap<String,FileDescription> filesDescriptions = this.loadFilesDescriptions();
+    
+    // Falta chequear lo de los directorios.
+    
+    for(int i = 0; i < checkoutFilesDescriptions.length; i++) {
+      
+      filesDescriptions.put(checkoutFilesDescriptions[i].getFileName(), checkoutFilesDescriptions[i]);
+      
+    }
+        
+    this.writeFilesDescriptions(filesDescriptions);
+    // falta funcion para escribir la nueva data en los archivos
 
   }
 
-  public void clientUpdate() {
+  public void clientUpdate(String [] files) {
+    
+    if(files.length == 0) {
+      System.out.println("No files to update");
+      System.exit(1);  
+    }
+    
+    for(int i = 0; i < files.length; i++) {
+      File file = new File(files[i]);
+      if(!file.exists()) {
+        System.out.println("File " + files[i] + "not found");
+        System.exit(0);
+      }
+    }
+    
+    FileDescription [] updateFilesDescriptions = null;
+    try {
+      updateFilesDescriptions = server.update();
+    } catch (RemoteException ex) {
+      Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    if(updateFilesDescriptions.length == 0) {
+      System.out.println("No files to update");
+      System.exit(0);
+    }
+    
+    HashMap<String,FileDescription> filesDescriptions = this.loadFilesDescriptions();
+    
+    for(int i = 0; i < files.length; i++) {
+      FileDescription fileDescription = this.getFileDescription(files[i], updateFilesDescriptions);
+      fileDescription.writeData();
+      filesDescriptions.put(files[i], fileDescription);
+    }
 
+    this.writeFilesDescriptions(filesDescriptions);
 
+  }
+  
+  private FileDescription getFileDescription(String file, FileDescription[] filesDescriptions) {
+    
+    for(int i = 0; i < filesDescriptions.length; i++) {
+      if(file.equals(filesDescriptions[i].getFileName()))
+        return filesDescriptions[i];
+    }
+    return null;
   }
 
   public void initialize() {
@@ -130,7 +226,7 @@ public class Client {
     return files;
   }
 
-  private HashMap loadFilesDescriptions() {
+  private HashMap<String,FileDescription> loadFilesDescriptions() {
 
     File file = new File(".vcs");
 
@@ -145,7 +241,7 @@ public class Client {
 
     userName = scanner.next();
 
-    HashMap filesDescriptions = new HashMap();
+    HashMap<String,FileDescription> filesDescriptions = new HashMap<String,FileDescription>();
 
     while(scanner.hasNext()) {
 
@@ -160,7 +256,7 @@ public class Client {
     return filesDescriptions;
   }
 
-  private void writeFilesDescriptions(HashMap filesDescriptions) {
+  private void writeFilesDescriptions(HashMap<String,FileDescription> filesDescriptions) {
 
     BufferedWriter out = null;
     try {
@@ -183,12 +279,12 @@ public class Client {
       Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
       System.exit(1);
     } finally {
-    try {
-      out.close();
-    } catch (IOException ex) {
-      Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+      try {
+        out.close();
+      } catch (IOException ex) {
+        Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+      }
     }
-  }
 
   }
 
@@ -196,10 +292,11 @@ public class Client {
 
     Client c = new Client();
     c.initialize();
-    String[] files = new String [3];
+    String[] files = new String [4];
     files[0] = "file1";
     files[1] = "file2";
     files[2] = "file3";
+    files[3] = "Hola/file4";
 
     c.clientCommit(files);
     System.exit(0);
