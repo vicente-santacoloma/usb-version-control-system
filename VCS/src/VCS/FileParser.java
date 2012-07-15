@@ -63,7 +63,7 @@ public  class FileParser {
       }
       return "";
   }
-  public static List<Element> getValueFileServer(Element server )
+  public static List<Element> getFilesServer(Element server )
   {
       List<Element> list = server.elements();
       for (Element lista:list)
