@@ -15,7 +15,6 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
-import org.dom4j.Document;
 /**
  *
  * @author Guille
@@ -36,9 +35,10 @@ public class VersionControlServer{
    * @param elections
    * @param messages 
    */ 
-  public VersionControlServer(MulticastSocket elections, MulticastSocket messages){
+  public VersionControlServer(MulticastSocket elections, MulticastSocket messages, int id){
     this.elections = elections;
     this.messages = messages;
+    this.id = id;
     
     try {
       this.multicastAddress = InetAddress.getByName("225.0.0.5");
@@ -79,37 +79,39 @@ public class VersionControlServer{
 
   
   /**
-   * 
-   * @param args Parámetros recibidos por consola: ID, IP
+   * @param args Parámetros recibidos por consola: host de rmi, puerto de rmi, 
+   * ID servidor, IP servidor
    * @throws InterruptedException
    * @throws RemoteException
    * @throws IOException 
    */
-   public static void main(String[] args) throws InterruptedException, RemoteException, IOException, NotBoundException{
+   public static void main(String[] args) 
+           throws InterruptedException, RemoteException, IOException, NotBoundException{
 
     
-    //parametro de entrada ip rmiregistry
-    // recibir por linea de comando mi ip y mi id
+    String hostrmi = null;
+    int portrmi = 0;
+    int id = 0;
+    String ip = null;
      
-    String host = null;
-    int port =0;
-     
-    if (!((0 < args.length) && (args.length < 3))) {
+    if (!((0 < args.length) && (args.length < 5))) {
 	    System.err.print("Parametros incorrectos: ");
-	    System.err.println("VersionControlServer <hostName> <port>");
+	    System.err.println("VersionControlServer <hostNamermi> <portrmi> <ID> <IP>");
 	    System.exit(1);
     }
 
     try {
       
-	    host = args[0];
-	    port = Integer.parseInt(args[1]);
+	    hostrmi = args[0];
+	    portrmi = Integer.parseInt(args[1]);
+      id = Integer.parseInt(args[2]);
+      ip = args[3];
       
     }
     catch (Exception e) {
-	    System.out.println();
 	    System.out.println("java.lang.Exception");
 	    System.out.println(e);
+      System.exit(1);
     }
      
     InetAddress group = InetAddress.getByName("225.0.0.5");
@@ -117,18 +119,25 @@ public class VersionControlServer{
     MulticastSocket s = new MulticastSocket(10602);
     
     MulticastSocket p = new MulticastSocket(41895);
+    
+    System.out.println("Uniendome al grupo");
      
     s.joinGroup(group);
     p.joinGroup(group);
     
+    System.out.println("Me uni al grupo");
+    
     /* mando un mensaje con mi id diciendo q me uno a la red */
      
-    VersionControlServer v = new VersionControlServer(s, p);
+    VersionControlServer v = new VersionControlServer(s, p, id);
     VersionControlImpl vci = new VersionControlImpl(p,v.dns,"vcsinfo.xml");
     
-    VersionControl c = (VersionControl) Naming.lookup("rmi://" + host + ":" + port + "/VCS");
+    VersionControl c = (VersionControl) Naming.lookup("rmi://" + hostrmi + ":" + portrmi 
+            + "/VCS");
      
     /* updateServer = actualizar los archivos */
+    
+    System.out.println("actualizando los archivos");
     
     c.updateServer(v.getId());
     
@@ -138,12 +147,23 @@ public class VersionControlServer{
     election.start();
     listenMessages.start();
     
+    System.out.println("se crearon los hilos, espero por el join");
+    
     election.join();
+    
+    System.out.println("soy coord: me conecto al rmi");
     
     /* coordinador se inscribe en rmi y resuelve peticiones del cliente */
     
-    Naming.rebind("VCS", vci);
-   
+    try {
+      Naming.rebind("rmi://" + hostrmi + ":" + portrmi + "/VCS", vci);
+    } catch (IOException e) {
+      System.err.println("Could not connect to RMI.");
+      System.exit(1);
+    }
+    
+    System.out.println("se unio al grupo, espero peticiones de vida");
+    
     // escuchar por un socket particular
     
     Socket clientSocket = null;
@@ -163,6 +183,8 @@ public class VersionControlServer{
     while(true){
     
       clientSocket = acceptS.accept();
+      
+      System.out.println("alguien me pregunto si vivo");
       
       out = new PrintWriter(clientSocket.getOutputStream(), true);
       
