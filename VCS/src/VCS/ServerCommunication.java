@@ -68,7 +68,7 @@ public class ServerCommunication extends Thread{
         }
         System.out.println("Done loading server configuration");
         
-        if(msg.getType() == EnumMessageType.FILE_S){
+        if(msg.getType() == EnumMessageType.FILE_R){
           System.out.println(father.getId() + ": Received a request to send the files");
           /*The coordinator is requesting to receive all files contained in
            this server*/
@@ -110,18 +110,20 @@ public class ServerCommunication extends Thread{
           System.out.println("Done updating configuration file");
           
           /*Update the appropriate files*/
-          for(FileDescription fe : msg.getCommitElements()){
-            for(Element file : FileParser.getDataElements(servConf)){
-              if(!fe.getFileName().equals(FileParser.getValueOfFile(file, "name")))
-                 continue;
-             
-               System.out.println(father.getId() + ": Updating file" 
-                       + FileParser.getValueOfFile(file, "name")
-                       + "...");
-               fout = new FileOutputStream(FileParser.getValueOfFile(file, "name"));
-               fout.write(fe.getData());
-               System.out.println("Done updating file " 
-                       + FileParser.getValueOfFile(file, "name"));
+          if(msg.getCommitElements() != null){
+            for(FileDescription fe : msg.getCommitElements()){
+              for(Element file : FileParser.getDataElements(servConf)){
+                if(!fe.getFileName().equals(FileParser.getValueOfFile(file, "name")))
+                  continue;
+
+                System.out.println(father.getId() + ": Updating file" 
+                        + FileParser.getValueOfFile(file, "name")
+                        + "...");
+                fout = new FileOutputStream(FileParser.getValueOfFile(file, "name"));
+                fout.write(fe.getData());
+                System.out.println("Done updating file " 
+                        + FileParser.getValueOfFile(file, "name"));
+              }
             }
           }
         }else{

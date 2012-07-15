@@ -18,7 +18,12 @@ public class Message implements Serializable {
   private int id;
   private FileDescription sentFile;
 
+  /*Request of server files by coordinator*/
+  public Message() {
+    this.type = EnumMessageType.FILE_R;
+  }
 
+  
   /**
    * Constructor for a message to send a file update
    * @param id

@@ -6,8 +6,11 @@ package VCS;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.text.AttributedCharacterIterator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dom4j.*;
@@ -119,4 +122,75 @@ public  class FileParser {
       
   }
   
+  
+  public static void addElementServer(Document document, int idServer, InetAddress ipServer,FileDescription[] files )
+  {
+    Element server = document.addElement( "server" );
+    server.addElement("id").addText(Integer.toString(idServer));
+    server.addElement("ip").addText(ipServer.toString());
+    Element data = server.addElement("data");
+    //Creo el nuevo file
+    if (files != null) {
+        for (int i = 0; i < files.length; i++) {
+        Element file = data.addElement("file");
+        file.addElement("name").setText(files[i].getFileName());
+         file.addElement("version").setText(Integer.toString( files[i].getVersion()));
+         file.addElement("timestamp").setText((files[i].getTimestamp()).toString());
+         file.addElement("user").setText(files[i].getUserName());
+         file.addElement("size").setText(Integer.toString(files[i].getData().length));
+        }
+    }
+  
+  }
+  
+  public static void addFileInServer(Document document, String idServer, FileDescription[] files)
+  {
+     List<Element> servers =  serverList( document);
+     Element server = null;
+     
+     for(Element serv : servers)
+     {
+        
+        if(getValueOfServer(serv,"id").equals(idServer))
+        {
+          server = serv;
+          break;
+        }
+       
+     }
+     
+     if(server != null)
+     {
+       Element data = server.element("data");
+       
+       for (int i = 0; i < files.length; i++) {
+        Element file = data.addElement("file");
+        file.addElement("name").setText(files[i].getFileName());
+         file.addElement("version").setText(Integer.toString( files[i].getVersion()));
+         file.addElement("timestamp").setText((files[i].getTimestamp()).toString());
+         file.addElement("user").setText(files[i].getUserName());
+          file.addElement("size").setText(Integer.toString(files[i].getData().length));
+        }
+     }
+  }
+  
+  public static HashSet<String> getTotalFiles(Document document)
+  {
+    HashSet<String> totalFiles = new  HashSet<String>();
+    
+    List<Element> server = serverList( document);
+     for (Element serv:server)
+      {
+          List<Element> files = getDataElements(serv );
+          
+          for(Element file:files)
+          {
+            totalFiles.add(getValueOfFile(file,"name"));
+          } 
+      }
+    
+
+   
+    return totalFiles;
+  }
 }

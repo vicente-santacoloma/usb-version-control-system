@@ -57,9 +57,13 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
             
             if (actualVersion == files[i].getVersion())
             {
+           
+              
               FileParser.setValueOfFile(fil,"version", Integer.toString( actualVersion+1) );
-              FileParser.setValueOfFile(fil,"timestamp",FileParser.getValueOfFile(fil, "timestamp") );
-              FileParser.setValueOfFile(fil,"user",FileParser.getValueOfFile(fil, "user") );
+              FileParser.setValueOfFile(fil,"timestamp",files[i].getTimestamp().toString());
+              FileParser.setValueOfFile(fil,"user",files[i].getUserName());
+              FileParser.setValueOfFile(fil, "size", Integer.toString(files[i].getData().length));
+
             return EnumVCS.OK;
             } else if (actualVersion < files[i].getVersion())
             {
@@ -78,7 +82,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
   
   @Override
-  public EnumVCS commit(FileDescription[] files)
+  public synchronized EnumVCS commit(FileDescription[] files)
           throws RemoteException {
 
         try {
@@ -131,6 +135,8 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   public FileDescription[] checkout()
           throws RemoteException {
 
+    
+    
     return null;
   }
 
@@ -162,10 +168,49 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
 
   @Override
-  public boolean requestEntry(int id, InetAddress ip) 
+  public synchronized boolean requestEntry(int id, InetAddress ip) 
     throws RemoteException {
+    boolean exists = false;
+    Document config = FileParser.parserFile("location.xml");
+    Message msg;
+    ByteArrayOutputStream bout;
+    ObjectOutputStream oos;
+    byte[] confB, bSend;
+    DatagramPacket pack;
     
-    return false;
+    /*Check if the server already exists on the list*/
+    for(Element s : FileParser.serverList(config)){
+      if(Integer.parseInt(FileParser.getValueOfServer(s, "id")) == id){
+        exists = true;
+        break;
+      }
+    }
+    
+    /*The element does not exist, add it and send the commit*/
+    if(!exists){
+      /*Add the element to the loaded document*/
+      FileParser.addElementServer(config, id, ip, null);
+      try{
+        bout = new ByteArrayOutputStream();
+        oos = new ObjectOutputStream(bout);
+        oos.writeObject(config);
+        confB = bout.toByteArray();
+
+        msg = new Message(confB, null);
+
+        bout = new ByteArrayOutputStream();
+        oos = new ObjectOutputStream(bout);
+        oos.writeObject(msg);
+        bSend = bout.toByteArray();
+        pack = new DatagramPacket(bSend, bSend.length);
+        _messages.send(pack);
+        
+        return true;
+      }catch(IOException ioe){
+        System.out.println(ioe.getMessage());
+      }
+    }
+    return true;
   }
   
 }
