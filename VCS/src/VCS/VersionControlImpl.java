@@ -7,14 +7,14 @@ package VCS;
 //import com.sun.org.apache.xml.internal.serializer.utils.Messages;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
+import java.net.*;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -133,17 +133,60 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
 
   @Override
-  public FileDescription[] checkout()
+  public synchronized FileDescription[] checkout()
           throws RemoteException {
-
+    DatagramPacket pack;
+    Socket recv;
+    ServerSocket sock = null;
+    byte[] bSend;
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ObjectOutputStream oos;
+    ObjectInputStream ois;
+    Message msg = new Message();
+    ArrayList<FileDescription> toRet = new ArrayList<FileDescription>();
+    HashSet<String> files;
+    FileDescription fileR;
     
+    System.out.println("RMI: Received a checkout request");
+    try{
+      oos = new ObjectOutputStream(baos);
+      oos.writeObject(msg);
+      bSend = baos.toByteArray();
+      pack = new DatagramPacket(bSend, bSend.length);
+      
+      System.out.println("RMI: Getting the files set");
+      files = FileParser.getTotalFiles(FileParser.parserFile("location.xml"));
+      
+      if(sock != null && !sock.isClosed())
+        sock.close();
+      
+      sock = new ServerSocket(10704);
+      System.out.println("RMI: Sending request for files");
+      _messages.send(pack);
+      
+      while(!files.isEmpty()){
+        System.out.println("RMI: Waiting to receive another file");
+        recv = sock.accept();
+        ois = new ObjectInputStream(recv.getInputStream());
+        fileR = (FileDescription) ois.readObject();
+        System.out.println("RMI: Received file " + fileR.getFileName());
+        if(files.remove(fileR.getFileName()))
+          toRet.add(fileR);
+      }
+    }catch(IOException ioe){
+      System.out.println(ioe.getMessage());
+    }catch(ClassNotFoundException cnf){
+      System.out.println(cnf.getMessage());
+    }
     
-    return null;
+    System.out.println("RMI: Checkout built, returning");
+    return (FileDescription [])toRet.toArray();
   }
 
   @Override
   public FileDescription[] update()
           throws RemoteException {
+    System.out.println("RMI: Received an update request");
     return this.checkout();
   }
 
