@@ -13,6 +13,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.dom4j.Document;
@@ -151,20 +152,32 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
     throws RemoteException{
     
     FileDescription[] files = this.checkout();
-    FileDescription[] update = null;
-    //Document doc = parserFile("vcsInfo.xml");
+    ArrayList<FileDescription> update = new ArrayList<FileDescription>();
+    Document doc = FileParser.parserFile(_configFile);
+    Element server = null;
     
-    for(int i = 0; i < files.length; i++){
+    
+    for(Element s: FileParser.serverList(doc)){
       
+      if (Integer.parseInt(FileParser.getValueOfServer(s, "id")) == id){
       
-      
+        server = s;
+        break;
+      }
     }
     
+    for(Element file: FileParser.getDataElements(server)){
+      
+      for(FileDescription f: files){
+      
+        if (f.getFileName().equals(FileParser.getValueOfFile(file, "name"))){
+          update.add(f);
+          break;
+        }
+      }
+    }
     
-    
-    
-    
-    return null;
+    return (FileDescription[]) update.toArray();
   }
 
   @Override

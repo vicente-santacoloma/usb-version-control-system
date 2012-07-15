@@ -164,13 +164,13 @@ public  class FileParser {
        Element data = server.element("data");
        
        for (int i = 0; i < files.length; i++) {
-        Element file = data.addElement("file");
-        file.addElement("name").setText(files[i].getFileName());
+         Element file = data.addElement("file");
+         file.addElement("name").setText(files[i].getFileName());
          file.addElement("version").setText(Integer.toString( files[i].getVersion()));
          file.addElement("timestamp").setText((files[i].getTimestamp()).toString());
          file.addElement("user").setText(files[i].getUserName());
-          file.addElement("size").setText(Integer.toString(files[i].getData().length));
-        }
+         file.addElement("size").setText(Integer.toString(files[i].getData().length));
+       }
      }
   }
   
