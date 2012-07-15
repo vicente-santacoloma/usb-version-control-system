@@ -98,7 +98,7 @@ public class VersionControlServer{
     if (!((0 < args.length) && (args.length < 4))) {
 	    System.out.print("Parametros incorrectos: ");
 	    System.out.println("VersionControlServer <hostNamermi> <ID> <IP>");
-	    //System.exit(1);
+	    return;
     }
 
     try {
