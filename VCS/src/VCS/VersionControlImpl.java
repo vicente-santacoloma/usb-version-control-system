@@ -145,24 +145,29 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
     HashSet<String> files;
     FileDescription fileR;
     
+    System.out.println("RMI: Received a checkout request");
     try{
       oos = new ObjectOutputStream(baos);
       oos.writeObject(msg);
       bSend = baos.toByteArray();
       pack = new DatagramPacket(bSend, bSend.length);
       
+      System.out.println("RMI: Getting the files set");
       files = FileParser.getTotalFiles(FileParser.parserFile("location.xml"));
       
       if(sock != null && !sock.isClosed())
         sock.close();
       
       sock = new ServerSocket(10704);
+      System.out.println("RMI: Sending request for files");
       _messages.send(pack);
       
       while(!files.isEmpty()){
+        System.out.println("RMI: Waiting to receive another file");
         recv = sock.accept();
         ois = new ObjectInputStream(recv.getInputStream());
         fileR = (FileDescription) ois.readObject();
+        System.out.println("RMI: Received file " + fileR.getFileName());
         if(files.remove(fileR.getFileName()))
           toRet.add(fileR);
       }
@@ -172,12 +177,14 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
       System.out.println(cnf.getMessage());
     }
     
+    System.out.println("RMI: Checkout built, returning");
     return (FileDescription [])toRet.toArray();
   }
 
   @Override
   public FileDescription[] update()
           throws RemoteException {
+    System.out.println("RMI: Received an update request");
     return this.checkout();
   }
 
