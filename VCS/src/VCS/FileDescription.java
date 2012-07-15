@@ -75,6 +75,15 @@ public class FileDescription implements Serializable {
       Logger.getLogger(FileDescription.class.getName()).log(Level.SEVERE, null, ex);
     }
 
+
+  }
+  
+  public void updateFileDescriptionFile(String fileName, int version, Date timestamp, String userName, byte[] data) {
+    this.fileName = fileName;
+    this.version = version;
+    this.timestamp = timestamp;
+    this.userName = userName;
+    this.data = data;
   }
 
   // Getters and Setters
