@@ -4,20 +4,13 @@
  */
 package VCS;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
-import java.util.List;
-import org.dom4j.Document;
 import org.dom4j.Element;
 /**
  *
@@ -136,6 +129,7 @@ public class VersionControlServer{
     System.out.println("Me uni al grupo");
         
     VersionControl vci = (VersionControl) Naming.lookup("rmi://" + hostrmi + ":" + portrmi 
+
             + "/VCS");
      
     /* mando un mensaje con mi id diciendo q me uno a la red */
@@ -150,7 +144,7 @@ public class VersionControlServer{
     
     HashMap<Integer, InetAddress> dns = new HashMap<Integer, InetAddress>();
     
-    for(Element serv : FileParser.serverList(FileParser.parserFile("loaction.xml")))
+    for(Element serv : FileParser.serverList(FileParser.parserFile("location.xml")))
       dns.put(Integer.parseInt(FileParser.getValueOfServer(serv, "id")),
               InetAddress.getByName(FileParser.getValueOfServer(serv, "ip"))
               );
