@@ -91,7 +91,20 @@ public  class FileParser {
       
       return null;
   }
-  
+   public static void setValueOfFile(Element file, String attribute, String value )
+  {
+      List<Element> list = file.elements();
+      for (Element lista:list)
+      {
+          if(attribute.equals( lista.getName()))
+          {
+            lista.setText(value);
+           return;
+          }
+      }
+
+  }
+   
   public static void updateXMLFile(String config,Document document)
   {
         try {

@@ -35,7 +35,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
 
   
-  private boolean checkConfigFile( Document document ,FileDescription[] files)
+  private EnumVCS checkConfigFile( Document document ,FileDescription[] files)
   {
     List<Element> servers = FileParser.serverList(document);
     
@@ -56,17 +56,16 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
             
             if (actualVersion == files[i].getVersion())
             {
-              //actualizar document
-        
+              FileParser.setValueOfFile(fil,"version", Integer.toString( actualVersion+1) );
+              FileParser.setValueOfFile(fil,"timestamp",FileParser.getValueOfFile(fil, "timestamp") );
+              FileParser.setValueOfFile(fil,"user",FileParser.getValueOfFile(fil, "user") );
+            return EnumVCS.OK;
             }else if(actualVersion < files[i].getVersion())
             {
-              //El archivo esta corrupto, checkout
-              
+              return EnumVCS.CHECKOUT;
             }else
             {
-              //revisar timestamp y usuario si son iguales es retransmision
-              
-              //Hay q avisar que el usuario tiene q hacer update
+              return EnumVCS.UPDATE;
             }
           }
         }
@@ -74,19 +73,22 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
       
     }
     
-    return false;
+    return EnumVCS.ERROR;
   }
   
   @Override
-  public String commit(FileDescription[] files)
+  public EnumVCS commit(FileDescription[] files)
           throws RemoteException {
         try {
 
             Document document = FileParser.parserFile(_configFile);
              //Actualizar Config File
              //Revisar lo de la versiones??
-             
-            ByteArrayOutputStream bs= new ByteArrayOutputStream();
+            EnumVCS result= checkConfigFile(document, files);
+            
+            if(result == EnumVCS.OK) 
+            {
+              ByteArrayOutputStream bs= new ByteArrayOutputStream();
             ObjectOutputStream os = new ObjectOutputStream (bs);
             os.writeObject(document);
             os.close();
@@ -102,11 +104,24 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
             DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
              
             _messages.send(packet);
-            return null;
+            return EnumVCS.OK;
+              
+            }else if(result == EnumVCS.CHECKOUT) 
+            {
+              return result;
+            }else if(result == EnumVCS.UPDATE) 
+            {
+              return result;
+            }else
+            {   //Retorno Error
+              return result;
+           
+            }
+            
         } catch (IOException ex) {
             System.err.println("No se pudo realizar el commit.");
             //Hay q retornar el mensaje q no se realizo el commit
-            return null;
+            return EnumVCS.ERROR;
         }
   }
 

@@ -9,6 +9,6 @@ package VCS;
  * @author lavz24
  */
 public enum EnumVCS {
-    OK, CHECKOUT, UPDATE
+    OK, CHECKOUT, UPDATE, ERROR
 }
 
