@@ -42,15 +42,46 @@ public class Client {
       System.exit(1);
     }
   }
+  
+  public void run(String args[]) {
+    
+    String [] files = null;
+    if(args[0].equals("init")) {
+      if(args.length == 1)
+        this.clientInit();       
+      System.out.println("Invalid operation");
+      System.exit(1);
+    } 
+    else if(args[0].equals("commit")) {
+      if(args.length > 1) {
+        files = this.getFiles(args);
+        this.clientCommit(files);
+      }
+      System.out.println("Invalid operation");
+      System.exit(1);
+    } else if(args[0].equals("checkout")) {
+      if(args.length == 1)
+        this.clientCheckout();
+      System.out.println("Invalid operation");
+      System.exit(1);
+    } else if(args[0].equals("update")) {
+      if(args.length > 1) {
+        files = this.getFiles(args);
+        this.clientUpdate(files);
+      }
+      System.out.println("Invalid operation");
+      System.exit(1);
+    }
+  }
 
-  public void clientCommit(String [] files) {
+  private void clientCommit(String [] files) {
 
     if(files.length == 0) {
       System.out.println("No files to commit");
       System.exit(0);  
     }
 
-    for(int i = 0; i < files.length; i++) {
+    for(int i = 0; i < files.length; ++i) {
       File file = new File(files[i]);
       if(!file.exists()) {
         System.out.println("File " + files[i] + "not found");
@@ -61,7 +92,7 @@ public class Client {
     HashMap<String,FileDescription> filesDescriptions = this.loadFilesDescriptions();
     FileDescription [] filesDescriptionsArray = new FileDescription [files.length];
 
-    for(int i = 0; i < files.length; i++) {      
+    for(int i = 0; i < files.length; ++i) {      
       FileDescription fileDescription = (FileDescription) filesDescriptions.get(files[i]);
       if(fileDescription == null) {
         fileDescription = new FileDescription(files[i], 1, null,userName);
@@ -71,7 +102,7 @@ public class Client {
       fileDescription.setTimestamp(new Date(Calendar.getInstance().getTime().getTime()));
       filesDescriptionsArray[i] = fileDescription;
     }
-    /*
+    
     EnumVCS enumVCS = null;
     try {
       enumVCS = server.commit(filesDescriptionsArray);
@@ -80,14 +111,14 @@ public class Client {
     }
 
     if(this.checkEnumVCS(enumVCS)) {
-      for(int i = 0; i < filesDescriptionsArray.length; i++)
+      for(int i = 0; i < filesDescriptionsArray.length; ++i)
         filesDescriptionsArray[i].setVersion(filesDescriptionsArray[i].getVersion() + 1);
 
       this.writeFilesDescriptions(filesDescriptions);
     }
-    */
     
-    for(int i = 0; i < filesDescriptionsArray.length; i++)
+    
+    for(int i = 0; i < filesDescriptionsArray.length; ++i)
       filesDescriptionsArray[i].setVersion(filesDescriptionsArray[i].getVersion() + 1);
 
     this.writeFilesDescriptions(filesDescriptions);
@@ -110,7 +141,7 @@ public class Client {
     return false;
   }
 
-  public void clientCheckout() {
+  private void clientCheckout() {
     
     FileDescription [] checkoutFilesDescriptions = null;
     try {
@@ -126,27 +157,23 @@ public class Client {
     
     HashMap<String,FileDescription> filesDescriptions = this.loadFilesDescriptions();
     
-    // Falta chequear lo de los directorios.
-    
-    for(int i = 0; i < checkoutFilesDescriptions.length; i++) {
-      
+    for(int i = 0; i < checkoutFilesDescriptions.length; ++i) {
       filesDescriptions.put(checkoutFilesDescriptions[i].getFileName(), checkoutFilesDescriptions[i]);
-      
+      checkoutFilesDescriptions[i].writeData();
     }
         
     this.writeFilesDescriptions(filesDescriptions);
-    // falta funcion para escribir la nueva data en los archivos
 
   }
 
-  public void clientUpdate(String [] files) {
+  private void clientUpdate(String [] files) {
     
     if(files.length == 0) {
       System.out.println("No files to update");
       System.exit(1);  
     }
     
-    for(int i = 0; i < files.length; i++) {
+    for(int i = 0; i < files.length; ++i) {
       File file = new File(files[i]);
       if(!file.exists()) {
         System.out.println("File " + files[i] + "not found");
@@ -168,7 +195,7 @@ public class Client {
     
     HashMap<String,FileDescription> filesDescriptions = this.loadFilesDescriptions();
     
-    for(int i = 0; i < files.length; i++) {
+    for(int i = 0; i < files.length; ++i) {
       FileDescription fileDescription = this.getFileDescription(files[i], updateFilesDescriptions);
       fileDescription.writeData();
       filesDescriptions.put(files[i], fileDescription);
@@ -180,17 +207,16 @@ public class Client {
   
   private FileDescription getFileDescription(String file, FileDescription[] filesDescriptions) {
     
-    for(int i = 0; i < filesDescriptions.length; i++) {
+    for(int i = 0; i < filesDescriptions.length; ++i) {
       if(file.equals(filesDescriptions[i].getFileName()))
         return filesDescriptions[i];
     }
     return null;
   }
 
-  public void initialize() {
+  public void clientInit() {
     BufferedWriter out = null;
     try {
-      File file = new File(".vcs");
       out = new BufferedWriter(new FileWriter(new File(".vcs")));
       System.out.println("Insert username: ");
       BufferedReader read = new BufferedReader(new InputStreamReader(System.in));
@@ -213,14 +239,14 @@ public class Client {
     File [] listOfFiles = folder.listFiles();
     ArrayList<String> files = new ArrayList<String>();
 
-    for(int i = 0; i < listOfFiles.length; i++) {
+    for(int i = 0; i < listOfFiles.length; ++i) {
 
       if(listOfFiles[i].isFile())  
         files.add(listOfFiles[i].getPath());
       else if (listOfFiles[i].isDirectory()) {
         ArrayList<String> directoryFiles = this.listFiles(listOfFiles[i].getPath());
 
-        for(int j = 0; j < directoryFiles.size(); j++)
+        for(int j = 0; j < directoryFiles.size(); ++j)
           files.add(directoryFiles.get(j));
       } 
     }
@@ -288,20 +314,32 @@ public class Client {
     }
 
   }
+   
+  private String [] getFiles(String args []) {
+    
+    File file = null;
+    ArrayList<String> files = new ArrayList<String>();
+    
+    for(int i = 1; i < args.length; ++i) {
+      
+      if(args[i].equals("."))
+        return (String[]) this.listFiles(".").toArray();
+      file = new File(args[i]);
+      if(file.isFile())
+        files.add(args[i]);
+      else if(file.isDirectory())
+        files.add(args[i]);
+    }
+   
+    return (String[]) files.toArray();
+  }
 
   public static void main(String args[]) {
 
     Client c = new Client();
-    c.initialize();
-    String[] files = new String [4];
-    files[0] = "file1";
-    files[1] = "file2";
-    files[2] = "file3";
-    files[3] = "Hola/file4";
-
-    c.clientCommit(files);
+    // Client c = new Client(,);
+    c.run(args);
     System.exit(0);
-
   }
 
 }
