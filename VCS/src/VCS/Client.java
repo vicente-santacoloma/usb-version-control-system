@@ -76,9 +76,14 @@ public class Client {
 
   private void clientCommit(String [] files) {
 
+    if(files == null) {
+      System.out.println("Files not found");
+      System.exit(1);   
+    }
+    
     if(files.length == 0) {
       System.out.println("No files to commit");
-      System.exit(0);  
+      System.exit(1);  
     }
 
     for(int i = 0; i < files.length; ++i) {
@@ -116,12 +121,6 @@ public class Client {
 
       this.writeFilesDescriptions(filesDescriptions);
     }
-    
-    
-    for(int i = 0; i < filesDescriptionsArray.length; ++i)
-      filesDescriptionsArray[i].setVersion(filesDescriptionsArray[i].getVersion() + 1);
-
-    this.writeFilesDescriptions(filesDescriptions);
 
   }
   
@@ -168,7 +167,7 @@ public class Client {
 
   private void clientUpdate(String [] files) {
     
-    if(files.length == 0) {
+    if((files.length == 0)) {
       System.out.println("No files to update");
       System.exit(1);  
     }
@@ -322,16 +321,23 @@ public class Client {
     
     for(int i = 1; i < args.length; ++i) {
       
-      if(args[i].equals("."))
-        return (String[]) this.listFiles(".").toArray();
+      if(args[i].equals(".")) {
+        files = this.listFiles(".");
+        return (String[]) files.toArray(new String[files.size()]);
+        
+      }
       file = new File(args[i]);
-      if(file.isFile())
-        files.add(args[i]);
-      else if(file.isDirectory())
-        files.add(args[i]);
+      if(file.exists()) {
+        if(file.isFile())
+          files.add(args[i]);
+        else if(file.isDirectory())
+          files.add(args[i]);
+      } else
+        return null;
+        
     }
    
-    return (String[]) files.toArray();
+    return (String[]) files.toArray(new String[files.size()]);
   }
 
   public static void main(String args[]) {
