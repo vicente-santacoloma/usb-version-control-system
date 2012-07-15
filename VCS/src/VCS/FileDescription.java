@@ -11,7 +11,9 @@ import java.util.Date;
  *
  * @author Guille
  */
-public class FileDescription implements Serializable{
+public class FileDescription implements Serializable {
+  
+  private String fileName;
   private int version;
   private Date timestamp;
   private String userName;
@@ -20,12 +22,14 @@ public class FileDescription implements Serializable{
   /**
    * Constructor with all attributes
    * 
+   * @param fileName
    * @param version
    * @param timestamp
    * @param userName
    * @param data 
    */
-  public FileDescription(int version, Date timestamp, String userName, Byte[] data) {
+  public FileDescription(String fileName, int version, Date timestamp, String userName, Byte[] data) {
+    this.fileName = fileName;
     this.version = version;
     this.timestamp = timestamp;
     this.userName = userName;
@@ -39,7 +43,8 @@ public class FileDescription implements Serializable{
    * @param timestamp
    * @param userName 
    */
-  public FileDescription(int version, Date timestamp, String userName) {
+  public FileDescription(String fileName, int version, Date timestamp, String userName) {
+    this.fileName = fileName;
     this.version = version;
     this.timestamp = timestamp;
     this.userName = userName;
@@ -53,6 +58,10 @@ public class FileDescription implements Serializable{
 
   public Date getTimestamp() {
     return timestamp;
+  }
+  
+  public String getFileName() {
+    return fileName;
   }
 
   public String getUserName() {

@@ -12,7 +12,8 @@ import java.rmi.RemoteException;
  *
  * @author Guille
  */
-public interface VersionControl extends Remote{
+public interface VersionControl extends Remote {
+  
     public String commit(FileDescription[] files)
       throws RemoteException;
     
