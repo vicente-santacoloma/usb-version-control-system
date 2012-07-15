@@ -75,11 +75,6 @@ public class Client {
   }
 
   private void clientCommit(String [] files) {
-
-    if(files == null) {
-      System.out.println("Files not found");
-      System.exit(1);   
-    }
     
     if(files.length == 0) {
       System.out.println("No files to commit");
@@ -89,7 +84,7 @@ public class Client {
     for(int i = 0; i < files.length; ++i) {
       File file = new File(files[i]);
       if(!file.exists()) {
-        System.out.println("File " + files[i] + "not found");
+        System.out.println("File " + files[i] + " not found");
         System.exit(0);
       }
     }
@@ -97,7 +92,10 @@ public class Client {
     HashMap<String,FileDescription> filesDescriptions = this.loadFilesDescriptions();
     FileDescription [] filesDescriptionsArray = new FileDescription [files.length];
 
-    for(int i = 0; i < files.length; ++i) {      
+    for(int i = 0; i < files.length; ++i) {
+      
+      File file = new File(files[i]);
+      
       FileDescription fileDescription = (FileDescription) filesDescriptions.get(files[i]);
       if(fileDescription == null) {
         fileDescription = new FileDescription(files[i], 1, null,userName);
@@ -136,7 +134,6 @@ public class Client {
     } else if(enumVCS == enumVCS.ERROR) {
       System.out.println("operation failed");
     }
-    
     return false;
   }
 
@@ -159,6 +156,7 @@ public class Client {
     for(int i = 0; i < checkoutFilesDescriptions.length; ++i) {
       filesDescriptions.put(checkoutFilesDescriptions[i].getFileName(), checkoutFilesDescriptions[i]);
       checkoutFilesDescriptions[i].writeData();
+      System.out.println("Cloning the file " + checkoutFilesDescriptions[i].getFileName());
     }
         
     this.writeFilesDescriptions(filesDescriptions);
@@ -170,14 +168,6 @@ public class Client {
     if((files.length == 0)) {
       System.out.println("No files to update");
       System.exit(1);  
-    }
-    
-    for(int i = 0; i < files.length; ++i) {
-      File file = new File(files[i]);
-      if(!file.exists()) {
-        System.out.println("File " + files[i] + "not found");
-        System.exit(0);
-      }
     }
     
     FileDescription [] updateFilesDescriptions = null;
@@ -196,8 +186,11 @@ public class Client {
     
     for(int i = 0; i < files.length; ++i) {
       FileDescription fileDescription = this.getFileDescription(files[i], updateFilesDescriptions);
-      fileDescription.writeData();
-      filesDescriptions.put(files[i], fileDescription);
+      if(fileDescription != null) {
+        fileDescription.writeData();
+        filesDescriptions.put(files[i], fileDescription);
+        System.out.println("The file + " + files[i] + " has been actualized");
+      }
     }
 
     this.writeFilesDescriptions(filesDescriptions);
@@ -244,9 +237,7 @@ public class Client {
         files.add(listOfFiles[i].getPath());
       else if (listOfFiles[i].isDirectory()) {
         ArrayList<String> directoryFiles = this.listFiles(listOfFiles[i].getPath());
-
-        for(int j = 0; j < directoryFiles.size(); ++j)
-          files.add(directoryFiles.get(j));
+        files.addAll(directoryFiles);
       } 
     }
     return files;
@@ -274,7 +265,7 @@ public class Client {
       String fileName = scanner.next();
       int version = Integer.parseInt(scanner.next());
       FileDescription fileDescription = 
-              new FileDescription(fileName, version, null,userName);
+              new FileDescription(fileName, version, null, userName);
       filesDescriptions.put(fileName, fileDescription);
 
     }
@@ -324,19 +315,17 @@ public class Client {
       if(args[i].equals(".")) {
         files = this.listFiles(".");
         return (String[]) files.toArray(new String[files.size()]);
-        
       }
+      
       file = new File(args[i]);
-      if(file.exists()) {
-        if(file.isFile())
-          files.add(args[i]);
-        else if(file.isDirectory())
-          files.add(args[i]);
-      } else
-        return null;
+      
+      if(file.isDirectory())
+        files.addAll(this.listFiles(args[i]));
+      else {
+        files.add(args[i]);
+      }
         
     }
-   
     return (String[]) files.toArray(new String[files.size()]);
   }
 
