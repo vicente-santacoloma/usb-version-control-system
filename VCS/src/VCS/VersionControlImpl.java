@@ -133,8 +133,46 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   @Override
   public boolean requestEntry(int id, InetAddress ip) 
     throws RemoteException {
+    boolean exists = false;
+    Document config = FileParser.parserFile("location.xml");
+    Message msg;
+    ByteArrayOutputStream bout;
+    ObjectOutputStream oos;
+    byte[] confB, bSend;
+    DatagramPacket pack;
     
-    return false;
+    /*Check if the server already exists on the list*/
+    for(Element s : FileParser.serverList(config)){
+      if(Integer.parseInt(FileParser.getValueOfServer(s, "id")) == id){
+        exists = true;
+        break;
+      }
+    }
+    
+    /*The element does not exist, add it and send the commit*/
+    if(!exists){
+      /*Add the element to the loaded document*/
+      try{
+        bout = new ByteArrayOutputStream();
+        oos = new ObjectOutputStream(bout);
+        oos.writeObject(config);
+        confB = bout.toByteArray();
+
+        msg = new Message(confB, null);
+
+        bout = new ByteArrayOutputStream();
+        oos = new ObjectOutputStream(bout);
+        oos.writeObject(msg);
+        bSend = bout.toByteArray();
+        pack = new DatagramPacket(bSend, bSend.length);
+        _messages.send(pack);
+        
+        return true;
+      }catch(IOException ioe){
+        System.out.println(ioe.getMessage());
+      }
+    }
+    return true;
   }
   
 }
