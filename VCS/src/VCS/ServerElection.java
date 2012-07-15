@@ -86,11 +86,11 @@ public class ServerElection extends Thread{
       oos.writeObject(msg);
       bSend = bout.toByteArray();
       pack = new DatagramPacket(bSend, bSend.length);
-      elections.send(pack);
       if(!resp.isClosed())
         resp.close();
       resp = new ServerSocket(11149);
       resp.setSoTimeout(5000);
+      elections.send(pack);
       respSock = resp.accept();
 
       /*I'm the new coordinator, notify all*/

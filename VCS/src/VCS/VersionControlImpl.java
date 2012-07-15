@@ -10,9 +10,12 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.ServerSocket;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -126,10 +129,32 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
 
   @Override
-  public FileDescription[] checkout()
+  public synchronized FileDescription[] checkout()
           throws RemoteException {
-
+    DatagramPacket pack;
+    ServerSocket sock;
+    byte[] bSend;
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ObjectOutputStream oos;
+    Message msg = new Message();
+    ArrayList<FileDescription> toRet;
+    HashSet<String> files;
     
+    try{
+      oos = new ObjectOutputStream(baos);
+      oos.writeObject(msg);
+      bSend = baos.toByteArray();
+      pack = new DatagramPacket(bSend, bSend.length);
+      
+      files = FileParser.getTotalFiles(FileParser.parserFile("location.xml"));
+      
+      if(!sock.isClosed())
+        sock.close();
+      sock = new ServerSocket(10704);
+      
+    }catch(IOException ioe){
+      System.out.println(ioe.getMessage());
+    }
     
     return null;
   }
