@@ -8,7 +8,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.text.AttributedCharacterIterator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dom4j.*;
@@ -135,6 +137,7 @@ public  class FileParser {
          file.addElement("version").setText(Integer.toString( files[i].getVersion()));
          file.addElement("timestamp").setText((files[i].getTimestamp()).toString());
          file.addElement("user").setText(files[i].getUserName());
+         file.addElement("size").setText(Integer.toString(files[i].getData().length));
         }
     }
   
@@ -166,8 +169,28 @@ public  class FileParser {
          file.addElement("version").setText(Integer.toString( files[i].getVersion()));
          file.addElement("timestamp").setText((files[i].getTimestamp()).toString());
          file.addElement("user").setText(files[i].getUserName());
+          file.addElement("size").setText(Integer.toString(files[i].getData().length));
         }
      }
   }
   
+  public static HashSet<String> getTotalFiles(Document document)
+  {
+    HashSet<String> totalFiles = new  HashSet<String>();
+    
+    List<Element> server = serverList( document);
+     for (Element serv:server)
+      {
+          List<Element> files = getDataElements(serv );
+          
+          for(Element file:files)
+          {
+            totalFiles.add(getValueOfFile(file,"name"));
+          } 
+      }
+    
+
+   
+    return totalFiles;
+  }
 }

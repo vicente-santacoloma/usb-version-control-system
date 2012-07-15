@@ -27,6 +27,9 @@ and open the template in the editor.
         <user>
           lavz24
         </user>
+        <size>
+          50
+        </size>
       </file>
       
       <file>
@@ -42,6 +45,9 @@ and open the template in the editor.
         <user>
           vsancolomona
         </user>
+        <size>
+          30
+        </size>
       </file>
     </data>
   </server>
@@ -67,6 +73,9 @@ and open the template in the editor.
         <user>
           ninina
         </user>
+        <size>
+          20
+        </size>
       </file>
     </data>
   </server>

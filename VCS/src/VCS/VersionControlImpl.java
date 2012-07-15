@@ -56,9 +56,13 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
             
             if (actualVersion == files[i].getVersion())
             {
+           
+              
               FileParser.setValueOfFile(fil,"version", Integer.toString( actualVersion+1) );
-              FileParser.setValueOfFile(fil,"timestamp",FileParser.getValueOfFile(fil, "timestamp") );
-              FileParser.setValueOfFile(fil,"user",FileParser.getValueOfFile(fil, "user") );
+              FileParser.setValueOfFile(fil,"timestamp",files[i].getTimestamp().toString());
+              FileParser.setValueOfFile(fil,"user",files[i].getUserName());
+              FileParser.setValueOfFile(fil, "size", Integer.toString(files[i].getData().length));
+
             return EnumVCS.OK;
             }else if(actualVersion < files[i].getVersion())
             {
