@@ -130,7 +130,7 @@ public class VersionControlServer{
     
     /* mando un mensaje con mi id diciendo q me uno a la red */
      
-    VersionControlServer v = new VersionControlServer(s, p);
+    VersionControlServer v = new VersionControlServer(s, p,id);
     //cambiar el 10
     VersionControlImpl vci = new VersionControlImpl(p,v.dns,"vcsinfo.xml",10);
     
