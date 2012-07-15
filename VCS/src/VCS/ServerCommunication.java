@@ -7,7 +7,6 @@ package VCS;
 import java.io.*;
 import java.net.*;
 import java.sql.Date;
-import java.util.List;
 import org.dom4j.*;
 
 /**
@@ -55,20 +54,19 @@ public class ServerCommunication extends Thread{
         listener.receive(pack);
         bais = new ByteArrayInputStream(pack.getData());
         ois = new ObjectInputStream(bais);
-        System.out.println(father.getId() + ": Waiting to receive a server message");
+        System.out.println(father.getId() + ": Waiting to receive a server message...");
         msg = (Message) ois.readObject();
-        
-        System.out.println(father.getId() + ": Message received");
+        System.out.println("Server message received");
         
         /*Load this servers configuration*/
-        System.out.print(father.getId() + ": Loading server configuration...");
+        System.out.println(father.getId() + ": Loading server configuration...");
         for(Element s : FileParser.serverList(FileParser.parserFile("location.xml"))){
           if(Integer.parseInt(FileParser.getValueOfServer(s, "id")) != father.getId()){
             servConf = s;
             break;
           }
         }
-        System.out.println("Done");
+        System.out.println("Done loading server configuration");
         
         if(msg.getType() == EnumMessageType.FILE_S){
           System.out.println(father.getId() + ": Received a request to send the files");
@@ -94,9 +92,9 @@ public class ServerCommunication extends Thread{
                       FileParser.getValueOfFile(file, "user"),
                       data
                     );
-            System.out.print(father.getId() + ": Sending file " + fName + "...");
+            System.out.println(father.getId() + ": Sending file " + fName + "...");
             oos.writeObject(fSend);
-            System.out.println("Done");
+            System.out.println("Done sending " + fName);
           }
             
         }else if(msg.getType() == EnumMessageType.COMMIT){
@@ -107,9 +105,9 @@ public class ServerCommunication extends Thread{
           ois = new ObjectInputStream(bais);
           conf = (Document) ois.readObject();
           
-          System.out.print(father.getId() + ": Updating configuration file...");
+          System.out.println(father.getId() + ": Updating configuration file...");
           FileParser.updateXMLFile("location.xml", conf);
-          System.out.println("Done");
+          System.out.println("Done updating configuration file");
           
           /*Update the appropriate files*/
           for(FileDescription fe : msg.getCommitElements()){
@@ -117,12 +115,13 @@ public class ServerCommunication extends Thread{
               if(!fe.getFileName().equals(FileParser.getValueOfFile(file, "name")))
                  continue;
              
-               System.out.print(father.getId() + ": Updating file" 
+               System.out.println(father.getId() + ": Updating file" 
                        + FileParser.getValueOfFile(file, "name")
                        + "...");
                fout = new FileOutputStream(FileParser.getValueOfFile(file, "name"));
                fout.write(fe.getData());
-               System.out.println("Done");
+               System.out.println("Done updating file " 
+                       + FileParser.getValueOfFile(file, "name"));
             }
           }
         }else{
