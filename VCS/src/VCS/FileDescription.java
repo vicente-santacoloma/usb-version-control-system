@@ -5,7 +5,7 @@
 package VCS;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.sql.Date;
 
 /**
  *
@@ -17,7 +17,7 @@ public class FileDescription implements Serializable {
   private int version;
   private Date timestamp;
   private String userName;
-  private Byte[] data;
+  private byte[] data;
 
   /**
    * Constructor with all attributes
@@ -28,7 +28,7 @@ public class FileDescription implements Serializable {
    * @param userName
    * @param data 
    */
-  public FileDescription(String fileName, int version, Date timestamp, String userName, Byte[] data) {
+  public FileDescription(String fileName, int version, Date timestamp, String userName, byte[] data) {
     this.fileName = fileName;
     this.version = version;
     this.timestamp = timestamp;
@@ -52,7 +52,7 @@ public class FileDescription implements Serializable {
   }
 
   //Getters
-  public Byte[] getData() {
+  public byte[] getData() {
     return data;
   }
 
