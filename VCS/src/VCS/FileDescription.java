@@ -6,7 +6,10 @@ package VCS;
 
 import java.io.*;
 import java.sql.Date;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,7 +66,6 @@ public class FileDescription implements Serializable {
     } catch (FileNotFoundException ex) {
       System.out.println("The " + fileName + " to commit does not exist");
       Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-      System.exit(1);
     }
     data = new byte[(int)file.length()];
     try {
@@ -74,8 +76,22 @@ public class FileDescription implements Serializable {
     } catch (IOException ex) {
       Logger.getLogger(FileDescription.class.getName()).log(Level.SEVERE, null, ex);
     }
-
-
+  }
+  
+  public void writeData() {
+    
+    try {
+      
+      createDirectories(fileName);
+      
+      FileOutputStream out = new FileOutputStream(fileName);
+      out.write(data);
+    } catch (FileNotFoundException ex) {
+      Logger.getLogger(FileDescription.class.getName()).log(Level.SEVERE, null, ex);
+    } catch (IOException ex) {
+        Logger.getLogger(FileDescription.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    
   }
   
   public void updateFileDescriptionFile(String fileName, int version, Date timestamp, String userName, byte[] data) {
@@ -126,6 +142,21 @@ public class FileDescription implements Serializable {
 
   public void setVersion(int version) {
     this.version = version;
+  }
+  
+  private void createDirectories(String path){
+  
+    String[] tokens = path.split("/");
+    File f;
+    String currentPath = ".";
+    
+    for(int i = 0; i < tokens.length -1; ++i){
+      
+      currentPath += "/" + tokens[i];
+      f = new File(currentPath);
+      if (!f.exists()) f.mkdir();
+    }
+     
   }
 
 }

@@ -6,11 +6,11 @@ package VCS;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
+import java.net.*;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
 import java.util.*;
@@ -60,7 +60,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
     return tolerance;
   }
   
-  private EnumVCS checkConfigFile( Document document ,FileDescription[] files)
+  private EnumVCS checkConfigFile(Document document, FileDescription[] files)
   {
     HashMap<String,Integer> totalSizeInServer = new HashMap<String,Integer>();
     int count = 0;
@@ -95,7 +95,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
             }else if(actualVersion < files[i].getVersion())
             {
               return EnumVCS.CHECKOUT;
-            }else
+            } else
             {
               return EnumVCS.UPDATE;
             }
@@ -129,6 +129,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   @Override
   public synchronized EnumVCS commit(FileDescription[] files)
           throws RemoteException {
+
         try {
 
             Document document = FileParser.parserFile(_configFile);
@@ -139,22 +140,22 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
             if(result == EnumVCS.OK) 
             {
               ByteArrayOutputStream bs= new ByteArrayOutputStream();
-            ObjectOutputStream os = new ObjectOutputStream (bs);
-            os.writeObject(document);
-            os.close();
-             
-            byte[] configData =  bs.toByteArray();
-  
-            Message mensaje = new Message(configData, files);
-            ByteArrayOutputStream bs2 = new ByteArrayOutputStream();
-            ObjectOutputStream os2 = new ObjectOutputStream (bs2);
-            os2.writeObject(mensaje); 
-            os2.close();
-            byte[] bytes =  bs2.toByteArray();
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
-             
-            _messages.send(packet);
-            return EnumVCS.OK;
+              ObjectOutputStream os = new ObjectOutputStream (bs);
+              os.writeObject(document);
+              os.close();
+
+              byte[] configData =  bs.toByteArray();
+
+              Message mensaje = new Message(configData, files);
+              ByteArrayOutputStream bs2 = new ByteArrayOutputStream();
+              ObjectOutputStream os2 = new ObjectOutputStream (bs2);
+              os2.writeObject(mensaje);
+              os2.close();
+              byte[] bytes =  bs2.toByteArray();
+              DatagramPacket packet = new DatagramPacket(bytes, bytes.length);
+
+              _messages.send(packet);
+              return EnumVCS.OK;
               
             }else if(result == EnumVCS.CHECKOUT) 
             {
@@ -176,25 +177,105 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
 
   @Override
-  public FileDescription[] checkout()
+  public synchronized FileDescription[] checkout()
           throws RemoteException {
-
+    DatagramPacket pack;
+    Socket recv;
+    ServerSocket sock = null;
+    byte[] bSend;
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ObjectOutputStream oos;
+    ObjectInputStream ois;
+    Message msg = new Message();
+    ArrayList<FileDescription> toRet = new ArrayList<FileDescription>();
+    HashSet<String> files;
+    FileDescription fileR;
     
+    System.out.println("RMI: Received a checkout request");
+    try{
+      oos = new ObjectOutputStream(baos);
+      oos.writeObject(msg);
+      bSend = baos.toByteArray();
+      pack = new DatagramPacket(bSend, bSend.length);
+      
+      System.out.println("RMI: Getting the files set");
+      files = FileParser.getTotalFiles(FileParser.parserFile("location.xml"));
+      
+      if(sock != null && !sock.isClosed())
+        sock.close();
+      
+      sock = new ServerSocket(10704);
+      System.out.println("RMI: Sending request for files");
+      _messages.send(pack);
+      
+      while(!files.isEmpty()){
+        System.out.println("RMI: Waiting to receive another file");
+        recv = sock.accept();
+        ois = new ObjectInputStream(recv.getInputStream());
+        fileR = (FileDescription) ois.readObject();
+        System.out.println("RMI: Received file " + fileR.getFileName());
+        if(files.remove(fileR.getFileName()))
+          toRet.add(fileR);
+      }
+    }catch(IOException ioe){
+      System.out.println(ioe.getMessage());
+    }catch(ClassNotFoundException cnf){
+      System.out.println(cnf.getMessage());
+    }
     
-    return null;
+    System.out.println("RMI: Checkout built, returning");
+    return (FileDescription [])toRet.toArray();
   }
 
   @Override
   public FileDescription[] update()
           throws RemoteException {
+    System.out.println("RMI: Received an update request");
     return this.checkout();
   }
 
   @Override
   public FileDescription[] updateServer(int id)
     throws RemoteException{
-
-    return null;
+    
+    FileDescription[] files = this.checkout();
+    ArrayList<FileDescription> update = new ArrayList<FileDescription>();
+    Document doc = FileParser.parserFile(_configFile);
+    Element server = null;
+    
+    
+    ByteArrayOutputStream bs= new ByteArrayOutputStream();
+    try{
+      ObjectOutputStream os = new ObjectOutputStream (bs);
+      os.writeObject(doc);
+      os.close();
+    } catch(Exception e){
+        System.out.println(e.getMessage());
+    }
+    
+    update.add(new FileDescription("location.xml", -1, null, null, bs.toByteArray()));
+    
+    for(Element s: FileParser.serverList(doc)){
+      
+      if (Integer.parseInt(FileParser.getValueOfServer(s, "id")) == id){
+      
+        server = s;
+        break;
+      }
+    }
+    
+    for(Element file: FileParser.getDataElements(server)){
+      
+      for(FileDescription f: files){
+      
+        if (f.getFileName().equals(FileParser.getValueOfFile(file, "name"))){
+          update.add(f);
+          break;
+        }
+      }
+    }
+    
+    return (FileDescription[]) update.toArray();
   }
 
   @Override
@@ -242,5 +323,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
     }
     return true;
   }
+  
+  
   
 }
