@@ -6,11 +6,9 @@ package VCS;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.ServerSocket;
+import java.net.*;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
 import java.util.ArrayList;
@@ -136,13 +134,16 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   public synchronized FileDescription[] checkout()
           throws RemoteException {
     DatagramPacket pack;
-    ServerSocket sock;
+    Socket recv;
+    ServerSocket sock = null;
     byte[] bSend;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ObjectOutputStream oos;
+    ObjectInputStream ois;
     Message msg = new Message();
-    ArrayList<FileDescription> toRet;
+    ArrayList<FileDescription> toRet = new ArrayList<FileDescription>();
     HashSet<String> files;
+    FileDescription fileR;
     
     try{
       oos = new ObjectOutputStream(baos);
@@ -152,15 +153,26 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
       
       files = FileParser.getTotalFiles(FileParser.parserFile("location.xml"));
       
-      if(!sock.isClosed())
+      if(sock != null && !sock.isClosed())
         sock.close();
-      sock = new ServerSocket(10704);
       
+      sock = new ServerSocket(10704);
+      _messages.send(pack);
+      
+      while(!files.isEmpty()){
+        recv = sock.accept();
+        ois = new ObjectInputStream(recv.getInputStream());
+        fileR = (FileDescription) ois.readObject();
+        if(files.remove(fileR.getFileName()))
+          toRet.add(fileR);
+      }
     }catch(IOException ioe){
       System.out.println(ioe.getMessage());
+    }catch(ClassNotFoundException cnf){
+      System.out.println(cnf.getMessage());
     }
     
-    return null;
+    return (FileDescription [])toRet.toArray();
   }
 
   @Override

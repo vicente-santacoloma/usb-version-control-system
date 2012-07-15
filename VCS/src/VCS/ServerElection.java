@@ -86,7 +86,7 @@ public class ServerElection extends Thread{
       oos.writeObject(msg);
       bSend = bout.toByteArray();
       pack = new DatagramPacket(bSend, bSend.length);
-      if(!resp.isClosed())
+      if(resp != null && !resp.isClosed())
         resp.close();
       resp = new ServerSocket(11149);
       resp.setSoTimeout(5000);
