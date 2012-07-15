@@ -15,6 +15,9 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.List;
+import org.dom4j.Document;
+import org.dom4j.Element;
 /**
  *
  * @author Guille
@@ -93,6 +96,10 @@ public class VersionControlServer{
     int portrmi = 0;
     int id = 0;
     String ip = null;
+    int port =0;
+  
+     //parametro de entrada ip rmiregistry
+    // recibir por linea de comando mi ip y mi id
      
     if (!((0 < args.length) && (args.length < 5))) {
 	    System.err.print("Parametros incorrectos: ");

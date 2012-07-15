@@ -63,7 +63,8 @@ public  class FileParser {
       }
       return "";
   }
-  public static List<Element> getFilesServer(Element server )
+  
+  public static List<Element> getDataElements(Element server )
   {
       List<Element> list = server.elements();
       for (Element lista:list)
@@ -90,7 +91,20 @@ public  class FileParser {
       
       return null;
   }
-  
+   public static void setValueOfFile(Element file, String attribute, String value )
+  {
+      List<Element> list = file.elements();
+      for (Element lista:list)
+      {
+          if(attribute.equals( lista.getName()))
+          {
+            lista.setText(value);
+           return;
+          }
+      }
+
+  }
+   
   public static void updateXMLFile(String config,Document document)
   {
         try {
