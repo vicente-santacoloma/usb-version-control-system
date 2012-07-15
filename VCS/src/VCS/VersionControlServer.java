@@ -15,7 +15,9 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.List;
 import org.dom4j.Document;
+import org.dom4j.Element;
 /**
  *
  * @author Guille
@@ -87,8 +89,8 @@ public class VersionControlServer{
    */
    public static void main(String[] args) throws InterruptedException, RemoteException, IOException, NotBoundException{
 
-    
-    //parametro de entrada ip rmiregistry
+  
+     //parametro de entrada ip rmiregistry
     // recibir por linea de comando mi ip y mi id
      
     String host = null;

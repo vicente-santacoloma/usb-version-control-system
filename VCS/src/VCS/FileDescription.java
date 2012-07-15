@@ -72,5 +72,13 @@ public class FileDescription implements Serializable {
     return version;
   }
   
+  public void updateFileDescriptionFile(String fileName, int version, Date timestamp, String userName, byte[] data)
+  {
+    this.fileName = fileName;
+    this.version = version;
+    this.timestamp = timestamp;
+    this.userName = userName;
+    this.data = data;
+  }
   
 }

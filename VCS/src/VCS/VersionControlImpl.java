@@ -4,22 +4,18 @@
  */
 package VCS;
 
-import com.sun.org.apache.xml.internal.serializer.utils.Messages;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.MulticastSocket;
-import java.rmi.Naming;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 import org.dom4j.Document;
+import org.dom4j.Element;
 
 /**
  *
@@ -38,21 +34,64 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
     _configFile = configFile;
   }
 
+  
+  private boolean checkConfigFile( Document document ,FileDescription[] files)
+  {
+    List<Element> servers = FileParser.serverList(document);
+    
+    for(Element server : servers)
+    {
+      List<Element> file4Server = FileParser.getDataElements(server);
+      
+      for(Element fil: file4Server)
+      {
+        for (int i = 0; i < files.length; i++)
+        {
+          String idFile = FileParser.getValueOfFile(fil, "name");
+          
+          if (idFile.equals(files[i].getFileName()))
+          {
+            String versionFile = FileParser.getValueOfFile(fil, "version");
+            int actualVersion = Integer.parseInt(versionFile);
+            
+            if (actualVersion == files[i].getVersion())
+            {
+              //actualizar document
+        
+            }else if(actualVersion < files[i].getVersion())
+            {
+              //El archivo esta corrupto, checkout
+              
+            }else
+            {
+              //revisar timestamp y usuario si son iguales es retransmision
+              
+              //Hay q avisar que el usuario tiene q hacer update
+            }
+          }
+        }
+      }
+      
+    }
+    
+    return false;
+  }
+  
   @Override
   public String commit(FileDescription[] files)
           throws RemoteException {
         try {
 
-             Document document = FileParser.parserFile(_configFile);
+            Document document = FileParser.parserFile(_configFile);
              //Actualizar Config File
              //Revisar lo de la versiones??
              
-             ByteArrayOutputStream bs= new ByteArrayOutputStream();
-             ObjectOutputStream os = new ObjectOutputStream (bs);
-             os.writeObject(document);
-             os.close();
+            ByteArrayOutputStream bs= new ByteArrayOutputStream();
+            ObjectOutputStream os = new ObjectOutputStream (bs);
+            os.writeObject(document);
+            os.close();
              
-             byte[] configData =  bs.toByteArray();
+            byte[] configData =  bs.toByteArray();
   
             Message mensaje = new Message(configData, files);
             ByteArrayOutputStream bs2 = new ByteArrayOutputStream();
