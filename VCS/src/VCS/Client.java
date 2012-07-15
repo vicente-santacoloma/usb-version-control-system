@@ -155,6 +155,7 @@ public class Client {
     }
     
     FileDescription [] updateFilesDescriptions = null;
+    
     try {
       updateFilesDescriptions = server.update();
     } catch (RemoteException ex) {

@@ -4,6 +4,7 @@
  */
 package VCS;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -104,7 +105,7 @@ public class VersionControlServer{
     if (!((0 < args.length) && (args.length < 5))) {
 	    System.err.print("Parametros incorrectos: ");
 	    System.err.println("VersionControlServer <hostNamermi> <portrmi> <ID> <IP>");
-	    System.exit(1);
+	    //System.exit(1);
     }
 
     try {
@@ -118,7 +119,7 @@ public class VersionControlServer{
     catch (Exception e) {
 	    System.out.println("java.lang.Exception");
 	    System.out.println(e);
-      System.exit(1);
+      //System.exit(1);
     }
      
     InetAddress group = InetAddress.getByName("225.0.0.5");
@@ -146,7 +147,12 @@ public class VersionControlServer{
     
     System.out.println("actualizando los archivos");
     
-    vci.updateServer(v.getId());
+    FileDescription[] files = vci.updateServer(v.getId());
+    
+    for(FileDescription fd: files){
+    
+      fd.writeData();
+    }
     
     Thread election = new ServerElection(s, v);
     Thread listenMessages = new ServerCommunication(p,v);
@@ -166,7 +172,7 @@ public class VersionControlServer{
       Naming.rebind("rmi://" + hostrmi + ":" + portrmi + "/VCS", vci);
     } catch (IOException e) {
       System.err.println("Could not connect to RMI.");
-      System.exit(1);
+      //System.exit(1);
     }
     
     System.out.println("se unio al grupo, espero peticiones de vida");
@@ -181,7 +187,7 @@ public class VersionControlServer{
       acceptS = new ServerSocket(41651);
     } catch (IOException e) {
       System.err.println("Could not listen on port.");
-      System.exit(1);
+      //System.exit(1);
     }
     
     PrintWriter out; 

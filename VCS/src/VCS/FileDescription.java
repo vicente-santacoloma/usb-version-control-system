@@ -81,6 +81,9 @@ public class FileDescription implements Serializable {
   public void writeData() {
     
     try {
+      
+      createDirectories(fileName);
+      
       FileOutputStream out = new FileOutputStream(fileName);
       out.write(data);
     } catch (FileNotFoundException ex) {
@@ -139,6 +142,21 @@ public class FileDescription implements Serializable {
 
   public void setVersion(int version) {
     this.version = version;
+  }
+  
+  private void createDirectories(String path){
+  
+    String[] tokens = path.split("/");
+    File f;
+    String currentPath = ".";
+    
+    for(int i = 0; i < tokens.length -1; ++i){
+      
+      currentPath += "/" + tokens[i];
+      f = new File(currentPath);
+      if (!f.exists()) f.mkdir();
+    }
+     
   }
 
 }

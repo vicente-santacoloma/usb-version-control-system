@@ -6,6 +6,7 @@ package VCS;
 
 //import com.sun.org.apache.xml.internal.serializer.utils.Messages;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -200,6 +201,17 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
     Element server = null;
     
     
+    ByteArrayOutputStream bs= new ByteArrayOutputStream();
+    try{
+      ObjectOutputStream os = new ObjectOutputStream (bs);
+      os.writeObject(doc);
+      os.close();
+    } catch(Exception e){
+        System.out.println(e.getMessage());
+    }
+    
+    update.add(new FileDescription("location.xml", -1, null, null, bs.toByteArray()));
+    
     for(Element s: FileParser.serverList(doc)){
       
       if (Integer.parseInt(FileParser.getValueOfServer(s, "id")) == id){
@@ -268,5 +280,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
     }
     return true;
   }
+  
+  
   
 }
