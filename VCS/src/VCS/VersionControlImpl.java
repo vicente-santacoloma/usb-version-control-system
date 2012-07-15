@@ -6,13 +6,14 @@ package VCS;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
+import java.net.*;
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteObject;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -56,9 +57,13 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
             
             if (actualVersion == files[i].getVersion())
             {
+           
+              
               FileParser.setValueOfFile(fil,"version", Integer.toString( actualVersion+1) );
-              FileParser.setValueOfFile(fil,"timestamp",FileParser.getValueOfFile(fil, "timestamp") );
-              FileParser.setValueOfFile(fil,"user",FileParser.getValueOfFile(fil, "user") );
+              FileParser.setValueOfFile(fil,"timestamp",files[i].getTimestamp().toString());
+              FileParser.setValueOfFile(fil,"user",files[i].getUserName());
+              FileParser.setValueOfFile(fil, "size", Integer.toString(files[i].getData().length));
+
             return EnumVCS.OK;
             }else if(actualVersion < files[i].getVersion())
             {
@@ -77,7 +82,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
   
   @Override
-  public EnumVCS commit(FileDescription[] files)
+  public synchronized EnumVCS commit(FileDescription[] files)
           throws RemoteException {
         try {
 
@@ -126,15 +131,60 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
 
   @Override
-  public FileDescription[] checkout()
+  public synchronized FileDescription[] checkout()
           throws RemoteException {
-
-    return null;
+    DatagramPacket pack;
+    Socket recv;
+    ServerSocket sock = null;
+    byte[] bSend;
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ObjectOutputStream oos;
+    ObjectInputStream ois;
+    Message msg = new Message();
+    ArrayList<FileDescription> toRet = new ArrayList<FileDescription>();
+    HashSet<String> files;
+    FileDescription fileR;
+    
+    System.out.println("RMI: Received a checkout request");
+    try{
+      oos = new ObjectOutputStream(baos);
+      oos.writeObject(msg);
+      bSend = baos.toByteArray();
+      pack = new DatagramPacket(bSend, bSend.length);
+      
+      System.out.println("RMI: Getting the files set");
+      files = FileParser.getTotalFiles(FileParser.parserFile("location.xml"));
+      
+      if(sock != null && !sock.isClosed())
+        sock.close();
+      
+      sock = new ServerSocket(10704);
+      System.out.println("RMI: Sending request for files");
+      _messages.send(pack);
+      
+      while(!files.isEmpty()){
+        System.out.println("RMI: Waiting to receive another file");
+        recv = sock.accept();
+        ois = new ObjectInputStream(recv.getInputStream());
+        fileR = (FileDescription) ois.readObject();
+        System.out.println("RMI: Received file " + fileR.getFileName());
+        if(files.remove(fileR.getFileName()))
+          toRet.add(fileR);
+      }
+    }catch(IOException ioe){
+      System.out.println(ioe.getMessage());
+    }catch(ClassNotFoundException cnf){
+      System.out.println(cnf.getMessage());
+    }
+    
+    System.out.println("RMI: Checkout built, returning");
+    return (FileDescription [])toRet.toArray();
   }
 
   @Override
   public FileDescription[] update()
           throws RemoteException {
+    System.out.println("RMI: Received an update request");
     return this.checkout();
   }
 
@@ -146,10 +196,49 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   }
 
   @Override
-  public boolean requestEntry(int id, InetAddress ip) 
+  public synchronized boolean requestEntry(int id, InetAddress ip) 
     throws RemoteException {
+    boolean exists = false;
+    Document config = FileParser.parserFile("location.xml");
+    Message msg;
+    ByteArrayOutputStream bout;
+    ObjectOutputStream oos;
+    byte[] confB, bSend;
+    DatagramPacket pack;
     
-    return false;
+    /*Check if the server already exists on the list*/
+    for(Element s : FileParser.serverList(config)){
+      if(Integer.parseInt(FileParser.getValueOfServer(s, "id")) == id){
+        exists = true;
+        break;
+      }
+    }
+    
+    /*The element does not exist, add it and send the commit*/
+    if(!exists){
+      /*Add the element to the loaded document*/
+      FileParser.addElementServer(config, id, ip, null);
+      try{
+        bout = new ByteArrayOutputStream();
+        oos = new ObjectOutputStream(bout);
+        oos.writeObject(config);
+        confB = bout.toByteArray();
+
+        msg = new Message(confB, null);
+
+        bout = new ByteArrayOutputStream();
+        oos = new ObjectOutputStream(bout);
+        oos.writeObject(msg);
+        bSend = bout.toByteArray();
+        pack = new DatagramPacket(bSend, bSend.length);
+        _messages.send(pack);
+        
+        return true;
+      }catch(IOException ioe){
+        System.out.println(ioe.getMessage());
+      }
+    }
+    return true;
   }
   
 }
