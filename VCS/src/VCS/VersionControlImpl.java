@@ -120,8 +120,7 @@ public class VersionControlImpl extends RemoteObject implements VersionControl {
   @Override
   public FileDescription[] update()
           throws RemoteException {
-
-    return null;
+    return this.checkout();
   }
 
   @Override
