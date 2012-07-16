@@ -3,12 +3,12 @@
  To change this template, choose Tools | Templates
  and open the template in the editor.
  --><root>
-   <server>
-     <id>1</id>
-     <ip>localhost</ip>
-     <data>
-       
-     </data>
-   </server>
-   
- </root>
+  <server>
+    <id>1</id>
+    <ip>localhost</ip>
+    <data>
+      
+    </data>
+  </server>
+  
+</root>
