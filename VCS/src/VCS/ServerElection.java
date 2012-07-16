@@ -58,6 +58,7 @@ public class ServerElection extends Thread {
         /*
          * Check if coordinator is alive
          */
+        if(father.getDns() == null) continue;
         coordA = father.getDns().get(father.getCoordId());
         coordSocket = new Socket(coordA, 41651);
         bufIn = new BufferedReader(new InputStreamReader(coordSocket.getInputStream()));

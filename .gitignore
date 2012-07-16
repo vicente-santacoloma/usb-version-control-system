@@ -5,3 +5,5 @@
 *.war
 *.ear
 /VCS/nbproject/private/
+/VCS/build/
+/VCS/dist/
