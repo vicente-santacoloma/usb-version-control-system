@@ -4,13 +4,15 @@
  */
 package VCS;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.*;
-import java.rmi.Naming;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
+import java.net.UnknownHostException;
+import java.rmi.*;
+import java.security.AccessControlException;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.dom4j.Document;
 import org.dom4j.Element;
 /**
  *
@@ -137,7 +139,7 @@ public class VersionControlServer{
     
     while(v.coordId == -1)
       Thread.sleep(6000);
-    
+    System.out.println("Por aqui pase;");
     VersionControl vci = (VersionControl) Naming.lookup("rmi://" + hostrmi + ":" + portrmi
             + "/VCS");
      
@@ -146,10 +148,22 @@ public class VersionControlServer{
     
     System.out.println("Actualizando los archivos");
     
-    FileDescription[] files = vci.updateServer(id);
-    
-    for(FileDescription fd: files)
+  Object[] files = vci.updateServer(id);
+    boolean b = true;
+    for(Object fdo: files){
+      FileDescription fd = (FileDescription) fdo;
+      if(b){
+        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(fd.getData()));
+        try {
+          FileParser.updateXMLFile("location.xml", (Document)ois.readObject());
+        } catch (ClassNotFoundException ex) {
+          System.out.println(ex.getMessage());
+        }
+        b = false;
+        continue;
+      }
       fd.writeData();
+    }
     
     HashMap<Integer, InetAddress> dns = new HashMap<Integer, InetAddress>();
     
@@ -178,8 +192,9 @@ public class VersionControlServer{
     
     /* coordinador se inscribe en rmi y resuelve peticiones del cliente */
     
+     
     try {
-      Naming.rebind("rmi://" + this.hostrmi + ":" + this.portrmi + "/VCS", this.vci);
+      Naming.rebind("//" + this.hostrmi + ":" + this.portrmi + "/VCS", this.vci);
     
       System.out.println("se unio al grupo, espero peticiones de vida");
 
@@ -214,10 +229,31 @@ public class VersionControlServer{
         clientSocket.close();
       }
       acceptS.close();
-    } catch (IOException e) {
-      System.out.println("Could not connect to RMI.");
-      //System.exit(1);
-    }
+    } catch (MalformedURLException ex) {
+            System.out.println("Mala construccion del url para el rebind: " + ex.getMessage());
+            System.exit(0);
+        } catch (UnknownHostException ex) {
+            System.out.println("No se puede obtener el host local: " + ex.getMessage());
+            System.exit(0);
+        } catch (AccessException ex) {
+            System.out.println("Error  para agregar el stub del objeto: " + ex.getMessage());
+            System.exit(0);
+        } catch (NoSuchObjectException ex) {
+            System.out.println("Error accediendo al puerto, para agregar el stub del objeto: " + ex.getMessage());
+            System.exit(0);
+        } catch (RemoteException ex) {
+            System.out.println("Error en la creacion del objeto remoto: " + ex.getMessage());
+            System.exit(0);
+        } catch (AccessControlException ex) {
+            System.out.println("Error con los permisos de acceso para agregar al objeto remoto: " + ex.getMessage());
+            System.exit(0);
+        } catch (FileNotFoundException ex) {
+            System.out.println("Extrano. Se ha perdido un archivo:" + ex.getMessage());
+            System.exit(0);
+        } catch (IOException ex) {
+            System.out.println("Extrano. Error I/O:" + ex.getMessage());
+            System.exit(0);
+        }
     
   }
 }

@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.text.AttributedCharacterIterator;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,15 +32,17 @@ public  class FileParser {
     
     try
     {
+      System.out.println(file);
         document = reader.read(file);    
     }
     catch (DocumentException e)
     {
         //Imprimir error 
-       System.err.print("El archivo con el respaldo de los servidores no se pudo abrir.");
+      e.printStackTrace();
+       System.out.println(e.getMessage());
        System.exit(1);
     }
-    
+    updateXMLFile("Test.xml", document);
     return document;
   }
   
@@ -78,7 +81,7 @@ public  class FileParser {
           }
       }
       
-      return null;
+      return new ArrayList<Element>();
   }
   
   public static String getValueOfFile(Element file, String attribute )
@@ -92,7 +95,7 @@ public  class FileParser {
           }
       }
       
-      return null;
+      return "";
   }
    public static void setValueOfFile(Element file, String attribute, String value )
   {

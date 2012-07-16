@@ -61,7 +61,7 @@ public class ServerCommunication extends Thread{
         /*Load this servers configuration*/
         System.out.println(father.getId() + ": Loading server configuration...");
         for(Element s : FileParser.serverList(FileParser.parserFile("location.xml"))){
-          if(Integer.parseInt(FileParser.getValueOfServer(s, "id")) != father.getId()){
+          if(Integer.parseInt(FileParser.getValueOfServer(s, "id")) == father.getId()){
             servConf = s;
             break;
           }

@@ -144,7 +144,7 @@ public class Client {
     
     FileDescription [] checkoutFilesDescriptions = null;
     try {
-      checkoutFilesDescriptions = server.checkout();
+      checkoutFilesDescriptions = (FileDescription[]) server.checkout();
     } catch (RemoteException ex) {
       Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -183,7 +183,7 @@ public class Client {
     FileDescription [] updateFilesDescriptions = null;
     
     try {
-      updateFilesDescriptions = server.update();
+      updateFilesDescriptions = (FileDescription[]) server.update();
     } catch (RemoteException ex) {
       Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
     }
