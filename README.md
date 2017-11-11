@@ -1,2 +1,2 @@
-# usb-version-control-systems
-Simón Bolívar University - CI4821 - Operating Systems II - Version Control Systems
+# usb-version-control-system
+Simón Bolívar University - CI4821 - Operating Systems II - Version Control System
